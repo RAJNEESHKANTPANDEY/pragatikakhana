@@ -1,0 +1,63 @@
+{
+  "pantry": [
+    "Rice",
+    "Wheat flour",
+    "Moong dal",
+    "Toor dal",
+    "Chana dal",
+    "Onion",
+    "Tomato",
+    "Garlic",
+    "Ginger",
+    "Green chilli",
+    "Turmeric",
+    "Cumin seeds",
+    "Mustard seeds",
+    "Coriander powder",
+    "Garam masala",
+    "Ghee",
+    "Oil",
+    "Salt",
+    "Milk",
+    "Eggs",
+    "Potatoes",
+    "Spinach",
+    "Lemon juice",
+    "Coriander leaves",
+    "Curry leaves",
+    "Malabar Spinach"
+  ],
+  "customDishes": [
+    {
+      "id": "dish_1777131084801_rdxye",
+      "name": "Poy ka Bachka",
+      "emoji": "🍛",
+      "origin": "Bihar",
+      "category": "lunch",
+      "type": "veg",
+      "time": 30,
+      "easy": false,
+      "description": "Mix Malabar spinach with rice flour batter along with common spices and garlic",
+      "ingredients": [
+        {
+          "name": "Malabar Spinach",
+          "mandatory": true
+        },
+        {
+          "name": "Rice Flour",
+          "mandatory": true
+        },
+        {
+          "name": "Garlic",
+          "mandatory": true
+        }
+      ],
+      "recipe": "Mix all of the ingredients and roast on PAN with oil",
+      "tips": "",
+      "custom": true,
+      "createdAt": "2026-04-25T15:31:24.801Z",
+      "updatedAt": "2026-04-25T15:31:24.801Z"
+    }
+  ],
+  "updatedAt": "2026-04-25T15:31:40.152Z"
+}

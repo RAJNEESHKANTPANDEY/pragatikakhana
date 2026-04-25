@@ -1,0 +1,1149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Roz Ka Khana — Smart Meal Planner</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&family=Noto+Serif+Devanagari:wght@400;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:"DM Sans",sans-serif}
+:root{
+  --saffron:#E8760A;--saffron-light:#FFF3E0;--saffron-dark:#A0510A;
+  --turmeric:#F5C518;--cardamom:#1A5C3A;--rose:#C0392B;
+  --cream:#FDF6EC;--ink:#1C1008;--ink-mid:#4A3728;--ink-light:#7D6455;
+  --parchment:#FAF0DC;--midnight:#0D1B2A;--panel:#0A1520;
+  --match:#16a34a;--match-bg:#f0fdf4;--custom:#7c3aed;--custom-bg:#f5f3ff;
+}
+body{background:var(--cream);color:var(--ink);min-height:100vh;overflow-x:hidden}
+.hero{background:var(--midnight);color:white;position:relative;overflow:hidden}
+.hero-inner{max-width:1500px;margin:0 auto;padding:2rem 2rem 0;display:flex;align-items:center;justify-content:space-between;gap:2rem}
+.hero-bg{position:absolute;inset:0;opacity:.04;background-image:repeating-linear-gradient(45deg,white 0,white 1px,transparent 0,transparent 50%);background-size:20px 20px}
+.brand{position:relative;z-index:1}
+.brand-hindi{font-family:"Noto Serif Devanagari",serif;font-size:.9rem;color:var(--turmeric);letter-spacing:.1em;display:block;margin-bottom:.2rem}
+.brand-title{font-family:"Playfair Display",serif;font-size:2.5rem;font-weight:900;line-height:1;background:linear-gradient(135deg,#fff 0%,var(--turmeric) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.brand-sub{font-size:.76rem;color:rgba(255,255,255,.42);margin-top:.3rem}
+.date-box{position:relative;z-index:1;text-align:right}
+.date-day{font-family:"Playfair Display",serif;font-size:3.2rem;font-weight:900;color:var(--saffron);line-height:1}
+.date-rest{font-size:.72rem;color:rgba(255,255,255,.48);letter-spacing:.1em;text-transform:uppercase}
+.meal-tabs{background:var(--midnight);border-top:1px solid rgba(255,255,255,.08)}
+.tabs-inner{max-width:1500px;margin:0 auto;padding:0 1.5rem;display:flex;align-items:stretch}
+.tab-btn{background:none;border:none;color:rgba(255,255,255,.42);font-weight:500;padding:.8rem 1.2rem;cursor:pointer;border-bottom:3px solid transparent;transition:all .2s;text-transform:uppercase;font-size:.72rem;letter-spacing:.07em;white-space:nowrap}
+.tab-btn.active{color:var(--turmeric);border-bottom-color:var(--saffron)}
+.tab-btn:hover:not(.active){color:white}
+.tab-icon{margin-right:.3rem}
+.tab-btn.pantry-tab.active{color:#86efac;border-bottom-color:var(--match)}
+.tab-btn.custom-tab{margin-left:auto}
+.tab-btn.custom-tab.active{color:#c4b5fd;border-bottom-color:var(--custom)}
+.controls-bar{background:var(--parchment);border-bottom:1px solid rgba(139,69,19,.15)}
+.controls-inner{max-width:1500px;margin:0 auto;padding:.55rem 1.5rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap}
+.set-info{font-size:.75rem;color:var(--ink-light)}
+.set-num{font-weight:700;color:var(--saffron-dark)}
+.mode-badge{display:inline-flex;align-items:center;gap:.3rem;background:var(--match-bg);color:var(--match);border:1px solid #bbf7d0;border-radius:20px;padding:.15rem .65rem;font-size:.66rem;font-weight:700}
+.nav-btns{display:flex;gap:.35rem}
+.nav-btn{background:var(--saffron);color:white;border:none;border-radius:6px;padding:.38rem .9rem;font-size:.75rem;font-weight:600;cursor:pointer;transition:all .15s}
+.nav-btn:hover{background:var(--saffron-dark);transform:translateY(-1px)}
+.nav-btn:disabled{background:#ddd;color:#999;cursor:not-allowed;transform:none}
+.nav-btn.prev{background:white;color:var(--ink-mid);border:1px solid rgba(139,69,19,.2)}
+.nav-btn.prev:hover:not(:disabled){background:var(--parchment)}
+.shuffle-btn{background:var(--cardamom);color:white;border:none;border-radius:6px;padding:.38rem .9rem;font-size:.75rem;font-weight:600;cursor:pointer;transition:all .15s}
+.shuffle-btn:hover{background:#0f4529;transform:translateY(-1px)}
+.filter-row{display:flex;gap:.3rem;flex-wrap:wrap;align-items:center}
+.filter-btn{background:white;color:var(--ink-mid);border:1px solid rgba(139,69,19,.18);border-radius:20px;padding:.18rem .7rem;font-size:.66rem;font-weight:600;cursor:pointer;transition:all .15s}
+.filter-btn.active{background:var(--saffron);color:white;border-color:var(--saffron)}
+.filter-btn.gf{color:var(--match);border-color:#86efac}
+.filter-btn.gf.active{background:var(--match);color:white;border-color:var(--match)}
+.filter-btn.pf{color:var(--custom);border-color:#c4b5fd}
+.filter-btn.pf.active{background:var(--custom);color:white;border-color:var(--custom)}
+.app-body{max-width:1500px;margin:0 auto;padding:1.2rem 1.5rem 4rem;display:grid;grid-template-columns:295px 1fr;gap:1.2rem}
+.app-body.full-width{grid-template-columns:1fr}
+/* PANTRY SIDEBAR */
+.pantry-panel{background:white;border-radius:14px;border:1px solid rgba(139,69,19,.1);overflow:hidden;height:fit-content;position:sticky;top:1rem}
+.pantry-header{background:var(--panel);color:white;padding:.9rem 1rem;display:flex;align-items:center;justify-content:space-between}
+.pantry-header h3{font-family:"Playfair Display",serif;font-size:1rem;font-weight:700}
+.p-count{background:rgba(255,255,255,.12);border-radius:20px;padding:.12rem .55rem;font-size:.68rem;font-weight:600;color:rgba(255,255,255,.8)}
+.pantry-body{padding:.9rem}
+.combo-wrap{position:relative;margin-bottom:.9rem}
+.combo-input{width:100%;border:1.5px solid rgba(139,69,19,.2);border-radius:9px;padding:.5rem .85rem .5rem 2.1rem;font-size:.8rem;background:var(--cream);color:var(--ink);outline:none;transition:border-color .15s}
+.combo-input:focus{border-color:var(--saffron)}
+.combo-icon{position:absolute;left:.65rem;top:50%;transform:translateY(-50%);font-size:.9rem;pointer-events:none}
+.combo-dropdown{position:absolute;top:calc(100% + 3px);left:0;right:0;background:white;border:1px solid rgba(139,69,19,.15);border-radius:9px;max-height:190px;overflow-y:auto;z-index:200;box-shadow:0 6px 20px rgba(28,16,8,.1);display:none}
+.combo-dropdown.open{display:block}
+.combo-option{padding:.45rem .85rem;font-size:.78rem;cursor:pointer;transition:background .1s;display:flex;align-items:center;gap:.45rem}
+.combo-option:hover{background:var(--saffron-light)}
+.combo-option.already{opacity:.38;cursor:not-allowed;pointer-events:none}
+.combo-add-new{padding:.45rem .85rem;font-size:.76rem;color:var(--saffron);font-weight:600;cursor:pointer;border-top:1px solid rgba(139,69,19,.08);display:flex;align-items:center;gap:.4rem}
+.combo-add-new:hover{background:var(--saffron-light)}
+.add-btn{width:100%;background:var(--cardamom);color:white;border:none;border-radius:7px;padding:.45rem;font-size:.76rem;font-weight:600;cursor:pointer;transition:all .15s;margin-top:.3rem;display:none}
+.add-btn.visible{display:block}
+.add-btn:hover{background:#0f4529}
+.ps-label{font-size:.6rem;font-weight:700;color:var(--saffron);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.45rem;display:flex;align-items:center;gap:.35rem}
+.ps-label::after{content:"";flex:1;height:1px;background:rgba(139,69,19,.1)}
+.pantry-items{display:flex;flex-wrap:wrap;gap:.3rem;max-height:250px;overflow-y:auto;margin-bottom:.9rem}
+.p-item{display:inline-flex;align-items:center;gap:.3rem;background:var(--match-bg);color:#166534;border:1px solid #bbf7d0;border-radius:20px;padding:.2rem .6rem;font-size:.7rem;font-weight:500}
+.p-item-rm{background:none;border:none;color:#86efac;cursor:pointer;font-size:.72rem;line-height:1;padding:0;transition:color .1s}
+.p-item-rm:hover{color:#dc2626}
+.p-empty{text-align:center;padding:1.25rem;color:var(--ink-light);font-size:.78rem}
+.p-footer{display:flex;gap:.35rem;border-top:1px solid rgba(139,69,19,.08);padding-top:.7rem}
+.pf-btn{flex:1;background:var(--cream);color:var(--ink-mid);border:1px solid rgba(139,69,19,.15);border-radius:6px;padding:.34rem .5rem;font-size:.65rem;font-weight:600;cursor:pointer;transition:all .15s;text-align:center}
+.pf-btn:hover{background:var(--parchment)}
+.pf-btn.danger{color:var(--rose);border-color:rgba(192,57,43,.2)}
+.pf-btn.danger:hover{background:#fdecea}
+/* DISH CARDS */
+.dishes-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(225px,1fr));gap:.9rem}
+.dish-card{background:white;border-radius:13px;overflow:hidden;cursor:pointer;transition:all .2s;border:1px solid rgba(139,69,19,.1);animation:fadeUp .28s ease both;position:relative}
+.dish-card:hover{transform:translateY(-3px);box-shadow:0 10px 28px rgba(28,16,8,.11);border-color:rgba(232,118,10,.3)}
+.dish-card.can-make{border-color:#86efac;box-shadow:0 2px 10px rgba(22,163,74,.1)}
+.dish-card.can-make:hover{box-shadow:0 10px 28px rgba(22,163,74,.18);border-color:var(--match)}
+.dish-card.is-custom{border-color:#c4b5fd}
+.dish-card.is-custom:hover{border-color:var(--custom);box-shadow:0 10px 28px rgba(124,58,237,.15)}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.dew{height:72px;display:flex;align-items:center;justify-content:center;font-size:2.2rem;position:relative}
+.dcb{position:absolute;top:6px;right:6px;background:rgba(255,255,255,.93);border-radius:20px;padding:2px 7px;font-size:.57rem;font-weight:600;color:var(--ink-mid);max-width:105px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.deb{position:absolute;top:6px;left:6px;border-radius:20px;padding:2px 7px;font-size:.57rem;font-weight:600}
+.deb.easy{background:var(--cardamom);color:white}
+.deb.custom{background:var(--custom);color:white}
+.mb{position:absolute;bottom:5px;right:5px;border-radius:20px;padding:2px 7px;font-size:.57rem;font-weight:700}
+.mb.full{background:#dcfce7;color:var(--match)}
+.mb.partial{background:#fef9c3;color:#854d0e}
+.dish-body{padding:.7rem .8rem}
+.dish-name{font-family:"Playfair Display",serif;font-size:.9rem;font-weight:700;color:var(--ink);margin-bottom:.18rem;line-height:1.2}
+.dish-desc{font-size:.69rem;color:var(--ink-light);line-height:1.44;margin-bottom:.4rem;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.ing-dots{display:flex;gap:.18rem;flex-wrap:wrap;margin-bottom:.38rem}
+.id{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.id.have{background:var(--match)}.id.missing{background:#fca5a5}
+.id.opt-h{background:#86efac;opacity:.55}.id.opt-m{background:#d1d5db}
+.dish-footer{display:flex;align-items:center;justify-content:space-between;padding:.42rem .8rem;border-top:1px solid rgba(139,69,19,.07);background:var(--cream)}
+.dish-time{font-size:.64rem;color:var(--ink-light)}
+.dish-time strong{color:var(--ink-mid)}
+.dca{display:flex;gap:.3rem;align-items:center}
+.view-btn{font-size:.63rem;color:var(--saffron);font-weight:600;cursor:pointer;background:none;border:none;padding:0}
+.edit-cbtn{font-size:.63rem;color:var(--custom);font-weight:600;cursor:pointer;background:none;border:none;padding:0}
+.es{text-align:center;padding:3.5rem 2rem;color:var(--ink-light);grid-column:1/-1}
+.es-e{font-size:2.8rem;display:block;margin-bottom:.9rem}
+/* PAGES */
+.page{display:none}
+.page.active{display:block}
+/* PANTRY PAGE */
+.pp-wrap{background:white;border-radius:14px;border:1px solid rgba(139,69,19,.1);overflow:hidden}
+.ph{background:var(--panel);color:white;padding:1.2rem 1.4rem}
+.ph h2{font-family:"Playfair Display",serif;font-size:1.25rem;font-weight:700}
+.ph p{font-size:.72rem;color:rgba(255,255,255,.48);margin-top:.15rem}
+.pp-body{padding:1.3rem}
+.pp-stats{background:var(--match-bg);border:1px solid #bbf7d0;border-radius:9px;padding:.65rem 1rem;display:flex;align-items:center;gap:.65rem;margin-bottom:1.2rem;flex-wrap:wrap}
+.pp-stat{text-align:center;flex:1}
+.pp-stat-num{font-size:1.35rem;font-weight:700;color:var(--match);display:block}
+.pp-stat-label{font-size:.62rem;color:var(--ink-light);text-transform:uppercase;letter-spacing:.06em}
+.pp-divider{width:1px;height:28px;background:rgba(139,69,19,.1)}
+.pp-sw{position:relative;margin-bottom:.5rem}
+.pp-s{width:100%;border:1.5px solid rgba(139,69,19,.2);border-radius:10px;padding:.6rem 1rem .6rem 2.3rem;font-size:.87rem;background:var(--cream);outline:none;transition:border-color .15s;color:var(--ink)}
+.pp-s:focus{border-color:var(--saffron)}
+.pp-si{position:absolute;left:.8rem;top:50%;transform:translateY(-50%);font-size:.95rem;pointer-events:none}
+.pp-dd{position:absolute;top:calc(100% + 3px);left:0;right:0;background:white;border:1px solid rgba(139,69,19,.15);border-radius:10px;max-height:210px;overflow-y:auto;z-index:200;box-shadow:0 6px 20px rgba(28,16,8,.1);display:none}
+.pp-dd.open{display:block}
+.pp-opt{padding:.5rem .9rem;font-size:.82rem;cursor:pointer;display:flex;align-items:center;gap:.45rem;transition:background .1s}
+.pp-opt:hover{background:var(--saffron-light)}
+.pp-opt.already{opacity:.38;cursor:not-allowed;pointer-events:none}
+.pp-an{padding:.5rem .9rem;font-size:.78rem;color:var(--saffron);font-weight:600;cursor:pointer;border-top:1px solid rgba(139,69,19,.08);display:flex;align-items:center;gap:.35rem}
+.pp-an:hover{background:var(--saffron-light)}
+.pp-ab{background:var(--cardamom);color:white;border:none;border-radius:9px;padding:.52rem 1.1rem;font-size:.8rem;font-weight:600;cursor:pointer;margin-top:.55rem;transition:all .15s}
+.pp-ab:hover{background:#0f4529}
+.pp-ab:disabled{background:#ddd;color:#999;cursor:not-allowed}
+.pp-bulks{display:flex;gap:.4rem;margin-top:.9rem;flex-wrap:wrap}
+.pp-bb{background:var(--cream);color:var(--ink-mid);border:1px solid rgba(139,69,19,.15);border-radius:7px;padding:.36rem .8rem;font-size:.7rem;font-weight:600;cursor:pointer;transition:all .15s}
+.pp-bb:hover{background:var(--parchment)}
+.pp-bb.danger{color:var(--rose);border-color:rgba(192,57,43,.2)}
+.pp-bb.danger:hover{background:#fdecea}
+.pp-secs{display:grid;grid-template-columns:1fr 1fr;gap:1.4rem;margin-top:1.2rem}
+.pp-sec-title{font-size:.65rem;font-weight:700;color:var(--saffron);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.7rem;display:flex;align-items:center;gap:.4rem}
+.pp-sec-title::after{content:"";flex:1;height:1px;background:rgba(139,69,19,.1)}
+.pp-cloud{display:flex;flex-wrap:wrap;gap:.35rem}
+.pp-chip{display:inline-flex;align-items:center;gap:.3rem;border-radius:20px;padding:.22rem .65rem;font-size:.72rem;font-weight:500;cursor:pointer;transition:all .15s;border:1px solid transparent}
+.pp-chip.in{background:#dcfce7;color:#166534;border-color:#bbf7d0}
+.pp-chip.in:hover{background:#fee2e2;color:#dc2626;border-color:#fca5a5}
+.pp-chip.out{background:#f3f4f6;color:#6b7280;border-color:#e5e7eb}
+.pp-chip.out:hover{background:#dcfce7;color:#166534;border-color:#bbf7d0}
+/* CUSTOM PAGE */
+.cp-wrap{background:white;border-radius:14px;border:1px solid rgba(139,69,19,.1);overflow:hidden}
+.cp-header{background:linear-gradient(135deg,#2e1065,#4c1d95);color:white;padding:1.2rem 1.4rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap}
+.cp-header h2{font-family:"Playfair Display",serif;font-size:1.25rem;font-weight:700}
+.cp-header p{font-size:.72rem;color:rgba(255,255,255,.55);margin-top:.15rem}
+.add-dish-btn{background:rgba(255,255,255,.15);color:white;border:1px solid rgba(255,255,255,.25);border-radius:8px;padding:.5rem 1.1rem;font-size:.8rem;font-weight:600;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:.4rem;white-space:nowrap}
+.add-dish-btn:hover{background:rgba(255,255,255,.28)}
+.cp-body{padding:1.3rem}
+.cdg{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:.9rem}
+.cdc{background:var(--custom-bg);border:1px solid #e9d5ff;border-radius:12px;overflow:hidden;transition:all .2s;animation:fadeUp .25s ease both}
+.cdc:hover{transform:translateY(-2px);box-shadow:0 8px 22px rgba(124,58,237,.12);border-color:#c4b5fd}
+.cdc-head{background:linear-gradient(135deg,#4c1d95,#6d28d9);color:white;padding:.9rem 1rem;display:flex;align-items:center;gap:.7rem}
+.cdc-em{font-size:1.8rem}
+.cdc-info{flex:1;min-width:0}
+.cdc-name{font-family:"Playfair Display",serif;font-size:.95rem;font-weight:700;line-height:1.2}
+.cdc-meta{font-size:.65rem;color:rgba(255,255,255,.6);margin-top:.15rem}
+.cdc-body{padding:.8rem 1rem}
+.cdc-desc{font-size:.75rem;color:var(--ink-mid);line-height:1.5;margin-bottom:.65rem;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.cdc-tags{display:flex;gap:.3rem;flex-wrap:wrap;margin-bottom:.65rem}
+.cdc-tag{border-radius:20px;padding:2px 7px;font-size:.62rem;font-weight:600}
+.cdc-tag.veg{background:#e8f5e9;color:#1a5c3a}
+.cdc-tag.nonveg{background:#fdecea;color:#c0392b}
+.cdc-tag.vegan{background:#e3f2fd;color:#1565c0}
+.cdc-tag.meal{background:#ede9fe;color:#5b21b6}
+.cdc-tag.easy{background:#dcfce7;color:#166534}
+.cdc-actions{display:flex;gap:.4rem;border-top:1px solid #e9d5ff;padding-top:.65rem}
+.cdc-btn{flex:1;border:none;border-radius:7px;padding:.38rem .5rem;font-size:.7rem;font-weight:600;cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:.3rem}
+.cdc-btn.view{background:var(--custom-bg);color:var(--custom);border:1px solid #e9d5ff}.cdc-btn.view:hover{background:#ede9fe}
+.cdc-btn.edit{background:#ede9fe;color:var(--custom)}.cdc-btn.edit:hover{background:#ddd6fe}
+.cdc-btn.del{background:#fdecea;color:var(--rose)}.cdc-btn.del:hover{background:#fecaca}
+.no-custom{text-align:center;padding:3rem;color:var(--ink-light)}
+.no-custom-em{font-size:2.8rem;display:block;margin-bottom:.9rem}
+.no-custom p{font-size:.85rem;margin-bottom:1rem}
+.start-btn{background:var(--custom);color:white;border:none;border-radius:8px;padding:.55rem 1.2rem;font-size:.82rem;font-weight:600;cursor:pointer}
+.start-btn:hover{background:#6d28d9}
+/* FORM OVERLAY */
+.form-overlay{position:fixed;inset:0;background:rgba(13,27,42,.75);z-index:1100;display:flex;align-items:flex-start;justify-content:center;padding:1.5rem 1rem;backdrop-filter:blur(4px);opacity:0;transition:opacity .22s;pointer-events:none;overflow-y:auto}
+.form-overlay.open{opacity:1;pointer-events:all}
+.dish-form{background:white;border-radius:16px;max-width:680px;width:100%;transform:translateY(18px);transition:transform .22s;margin:auto}
+.form-overlay.open .dish-form{transform:translateY(0)}
+.form-head{background:linear-gradient(135deg,#2e1065,#4c1d95);color:white;padding:1.5rem;border-radius:16px 16px 0 0;display:flex;align-items:center;justify-content:space-between}
+.form-head h3{font-family:"Playfair Display",serif;font-size:1.3rem;font-weight:700}
+.form-head p{font-size:.72rem;color:rgba(255,255,255,.55);margin-top:.12rem}
+.form-close{background:rgba(255,255,255,.15);border:none;color:white;width:32px;height:32px;border-radius:50%;font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .15s}
+.form-close:hover{background:rgba(255,255,255,.25)}
+.form-body{padding:1.4rem}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+.fg{display:flex;flex-direction:column;gap:.3rem;margin-bottom:.85rem}
+.fg.full{grid-column:1/-1}
+.fl{font-size:.7rem;font-weight:700;color:var(--ink-mid);text-transform:uppercase;letter-spacing:.07em}
+.fl span{color:var(--rose);margin-left:1px}
+.fi,.fs,.ft{border:1.5px solid rgba(139,69,19,.18);border-radius:8px;padding:.5rem .75rem;font-size:.85rem;color:var(--ink);background:var(--cream);outline:none;transition:border-color .15s;width:100%}
+.fi:focus,.fs:focus,.ft:focus{border-color:var(--custom);background:white}
+.ft{resize:vertical;min-height:80px;line-height:1.5}
+.ft.tall{min-height:120px}
+.emoji-row{display:flex;gap:.4rem;flex-wrap:wrap;margin-top:.35rem}
+.ep{font-size:1.4rem;cursor:pointer;padding:.2rem .25rem;border-radius:6px;border:2px solid transparent;transition:all .15s;line-height:1}
+.ep:hover,.ep.sel{border-color:var(--custom);background:#ede9fe}
+/* Ingredient builder */
+.ing-builder{border:1.5px solid rgba(139,69,19,.15);border-radius:9px;overflow:hidden}
+.ib-list{max-height:180px;overflow-y:auto}
+.ib-row{display:flex;align-items:center;gap:.5rem;padding:.45rem .7rem;border-bottom:1px solid rgba(139,69,19,.07)}
+.ib-row:last-child{border-bottom:none}
+.ib-name{flex:1;font-size:.8rem;color:var(--ink-mid)}
+.ib-badge{font-size:.62rem;border-radius:20px;padding:1px 7px;font-weight:600}
+.ib-badge.req{background:#dcfce7;color:#166534}
+.ib-badge.opt{background:#f3f4f6;color:#6b7280}
+.ib-del{background:none;border:none;color:#fca5a5;cursor:pointer;font-size:.85rem;transition:color .1s}
+.ib-del:hover{color:#dc2626}
+.ib-add-row{display:flex;gap:.4rem;padding:.5rem .7rem;background:var(--saffron-light);border-top:1px solid rgba(139,69,19,.1)}
+.ib-add-wrap{position:relative;flex:1}
+.ib-input{width:100%;border:1px solid rgba(139,69,19,.2);border-radius:6px;padding:.38rem .6rem;font-size:.78rem;background:white;outline:none;color:var(--ink)}
+.ib-input:focus{border-color:var(--custom)}
+.ib-ac{position:absolute;top:100%;left:0;right:0;background:white;border:1px solid rgba(139,69,19,.15);border-radius:7px;max-height:150px;overflow-y:auto;z-index:300;box-shadow:0 4px 16px rgba(28,16,8,.1);display:none}
+.ib-ac.open{display:block}
+.ib-ac-opt{padding:.38rem .7rem;font-size:.78rem;cursor:pointer;transition:background .1s}
+.ib-ac-opt:hover{background:var(--saffron-light)}
+.ib-type{border:1px solid rgba(139,69,19,.2);border-radius:6px;padding:.38rem .5rem;font-size:.75rem;background:white;outline:none;color:var(--ink);cursor:pointer}
+.ib-add-btn{background:var(--cardamom);color:white;border:none;border-radius:6px;padding:.38rem .7rem;font-size:.75rem;font-weight:600;cursor:pointer;white-space:nowrap}
+.ib-add-btn:hover{background:#0f4529}
+.form-actions{display:flex;gap:.6rem;margin-top:1.25rem;flex-wrap:wrap}
+.fa-btn{flex:1;min-width:110px;padding:.58rem .9rem;border:none;border-radius:8px;font-size:.8rem;font-weight:600;cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:.35rem}
+.fa-btn.primary{background:var(--custom);color:white}.fa-btn.primary:hover{background:#6d28d9}
+.fa-btn.sec{background:var(--cream);color:var(--ink-mid);border:1px solid rgba(139,69,19,.15)}.fa-btn.sec:hover{background:var(--parchment)}
+.fa-btn.danger{background:#fdecea;color:var(--rose)}.fa-btn.danger:hover{background:#fee2e2}
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(13,27,42,.72);z-index:1000;display:flex;align-items:flex-start;justify-content:center;padding:1.5rem 1rem;backdrop-filter:blur(4px);opacity:0;transition:opacity .22s;pointer-events:none;overflow-y:auto}
+.modal-overlay.open{opacity:1;pointer-events:all}
+.modal{background:white;border-radius:16px;max-width:720px;width:100%;transform:translateY(16px);transition:transform .22s;margin:auto}
+.modal-overlay.open .modal{transform:translateY(0)}
+.modal-hero{background:var(--midnight);color:white;padding:1.6rem;border-radius:16px 16px 0 0;position:relative;overflow:hidden}
+.modal-hero.ch{background:linear-gradient(135deg,#2e1065,#4c1d95)}
+.mh-pat{position:absolute;inset:0;opacity:.04;background-image:radial-gradient(circle,white 1px,transparent 1px);background-size:18px 18px}
+.m-emoji{font-size:2.8rem;display:block;margin-bottom:.6rem;position:relative;z-index:1}
+.m-title{font-family:"Playfair Display",serif;font-size:1.6rem;font-weight:900;position:relative;z-index:1;margin-bottom:.2rem}
+.m-origin{font-size:.72rem;color:var(--turmeric);letter-spacing:.08em;text-transform:uppercase;position:relative;z-index:1}
+.m-close{position:absolute;top:.85rem;right:.85rem;background:rgba(255,255,255,.15);border:none;color:white;width:30px;height:30px;border-radius:50%;font-size:.95rem;cursor:pointer;z-index:2;display:flex;align-items:center;justify-content:center;transition:background .15s}
+.m-close:hover{background:rgba(255,255,255,.25)}
+.m-body{padding:1.15rem 1.5rem}
+.msec{margin-bottom:1rem}
+.msec-t{font-size:.65rem;font-weight:700;color:var(--saffron);letter-spacing:.12em;text-transform:uppercase;margin-bottom:.5rem;display:flex;align-items:center;gap:.4rem}
+.msec-t.pur{color:var(--custom)}
+.msec-t::after{content:"";flex:1;height:1px;background:rgba(139,69,19,.1)}
+.m-desc{font-size:.84rem;color:var(--ink-mid);line-height:1.68}
+.meta-g{display:grid;grid-template-columns:repeat(3,1fr);gap:.5rem}
+.mi{background:var(--cream);border-radius:8px;padding:.52rem;text-align:center}
+.mi-l{font-size:.6rem;color:var(--ink-light);text-transform:uppercase;letter-spacing:.06em;display:block;margin-bottom:.12rem}
+.mi-v{font-size:.86rem;font-weight:700;color:var(--ink)}
+.ing-g{display:grid;grid-template-columns:1fr 1fr;gap:.28rem}
+.ir{display:flex;align-items:center;gap:.4rem;font-size:.78rem;padding:.18rem .28rem;border-radius:6px}
+.ir.have-it{background:#f0fdf4}.ir.miss-it{background:#fff1f2}
+.ir.opt-h{background:#f0fdf4;opacity:.65}.ir.opt-m{background:#f9fafb}
+.id2{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.id2.have{background:var(--match)}.id2.miss{background:#f87171}
+.id2.opt-h{background:#86efac}.id2.opt-m{background:#d1d5db}
+.i-label{flex:1;color:var(--ink-mid)}
+.i-badge{font-size:.58rem;font-weight:600;border-radius:20px;padding:1px 6px}
+.i-badge.have{background:#dcfce7;color:var(--match)}
+.i-badge.miss{background:#fee2e2;color:#dc2626}
+.i-badge.opt{background:#f3f4f6;color:#6b7280}
+.recipe-box{background:var(--cream);border-radius:9px;padding:.9rem;border-left:3px solid var(--custom)}
+.recipe-box pre{font-size:.8rem;color:var(--ink-mid);line-height:1.65;white-space:pre-wrap;font-family:"DM Sans",sans-serif}
+.tips-box{background:var(--cream);border-radius:9px;padding:.9rem;border-left:3px solid var(--turmeric)}
+.tips-box pre{font-size:.8rem;color:var(--ink-mid);line-height:1.65;white-space:pre-wrap;font-family:"DM Sans",sans-serif}
+.m-actions{display:flex;gap:.5rem;margin-top:1rem;flex-wrap:wrap}
+.ab{flex:1;min-width:115px;padding:.55rem .85rem;border:none;border-radius:8px;font-size:.76rem;font-weight:600;cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:.3rem}
+.ab.primary{background:var(--saffron);color:white}.ab.primary:hover{background:var(--saffron-dark)}
+.ab.secondary{background:var(--midnight);color:white}.ab.secondary:hover{background:#1a2e45}
+.ab.green{background:var(--match);color:white}.ab.green:hover{background:#15803d}
+.ab.purple{background:var(--custom);color:white}.ab.purple:hover{background:#6d28d9}
+.ab.ghost{background:var(--cream);color:var(--ink-mid);border:1px solid rgba(139,69,19,.15)}.ab.ghost:hover{background:var(--parchment)}
+.ai-loading{display:flex;align-items:center;gap:.5rem;color:var(--ink-light);font-size:.78rem;padding:.8rem;background:var(--cream);border-radius:8px}
+.ai-spinner{width:14px;height:14px;border:2px solid rgba(232,118,10,.2);border-top-color:var(--saffron);border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0}
+@keyframes spin{to{transform:rotate(360deg)}}
+.ai-result{font-size:.8rem;color:var(--ink-mid);line-height:1.65;background:var(--cream);border-radius:8px;padding:.85rem;border-left:3px solid var(--saffron)}
+.ai-result h4{font-family:"Playfair Display",serif;font-size:.9rem;color:var(--ink);margin:.5rem 0 .18rem}
+.ai-result h4:first-child{margin-top:0}
+/* TOAST */
+.toast{position:fixed;bottom:1.8rem;right:1.8rem;background:var(--panel);color:white;border-radius:9px;padding:.65rem 1rem;font-size:.78rem;font-weight:500;z-index:3000;transform:translateY(18px);opacity:0;transition:all .22s;pointer-events:none;max-width:290px}
+.toast.show{transform:translateY(0);opacity:1}
+.toast.green{background:var(--match)}.toast.red{background:var(--rose)}.toast.purple{background:var(--custom)}
+@media(max-width:900px){.app-body{grid-template-columns:1fr}.pantry-panel{position:static}.pp-secs{grid-template-columns:1fr}.form-grid{grid-template-columns:1fr}}
+@media(max-width:640px){.hero-inner{flex-direction:column;align-items:flex-start;gap:.9rem;padding:1.2rem 1rem}.brand-title{font-size:1.85rem}.date-day{font-size:2.5rem}.date-box{text-align:left}.app-body{padding:1rem 1rem 3rem}.dishes-grid{grid-template-columns:1fr 1fr}.m-body{padding:1rem 1.1rem}.ing-g{grid-template-columns:1fr}.meta-g{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-inner">
+    <div class="brand">
+      <span class="brand-hindi">रोज़ का खाना</span>
+      <h1 class="brand-title">Roz Ka Khana</h1>
+      <p class="brand-sub">Smart meal planner &middot; <span id="totalCount">0</span> dishes &middot; Powered by your kitchen</p>
+    </div>
+    <div class="date-box" id="dateDisplay"></div>
+  </div>
+</header>
+<nav class="meal-tabs">
+  <div class="tabs-inner">
+    <button class="tab-btn active" onclick="switchView('breakfast')" id="tab-breakfast"><span class="tab-icon">&#127749;</span>Breakfast</button>
+    <button class="tab-btn" onclick="switchView('lunch')" id="tab-lunch"><span class="tab-icon">&#9728;&#65039;</span>Lunch</button>
+    <button class="tab-btn" onclick="switchView('dinner')" id="tab-dinner"><span class="tab-icon">&#127769;</span>Dinner</button>
+    <button class="tab-btn pantry-tab" onclick="switchView('pantry')" id="tab-pantry"><span class="tab-icon">&#129338;</span>Kitchen</button>
+    <button class="tab-btn custom-tab" onclick="switchView('custom')" id="tab-custom"><span class="tab-icon">&#10024;</span>My Recipes <span id="customBadge" style="background:#ede9fe;color:var(--custom);border-radius:20px;padding:1px 7px;font-size:.62rem;font-weight:700;margin-left:.2rem;display:none">0</span></button>
+  </div>
+</nav>
+<div class="controls-bar" id="controlsBar">
+  <div class="controls-inner">
+    <div style="display:flex;align-items:center;gap:.65rem;flex-wrap:wrap">
+      <span class="set-info">Set <span class="set-num" id="setNum">1</span> of <span class="set-num" id="setTotal">?</span></span>
+      <span class="mode-badge" id="modeBadge" style="display:none">&#129338; Pantry Mode</span>
+      <div class="filter-row">
+        <button class="filter-btn active" onclick="setFilter('all')" id="f-all">All</button>
+        <button class="filter-btn" onclick="setFilter('veg')" id="f-veg">&#129001; Veg</button>
+        <button class="filter-btn" onclick="setFilter('nonveg')" id="f-nonveg">&#128308; Non-Veg</button>
+        <button class="filter-btn" onclick="setFilter('easy')" id="f-easy">&#9889; Easy</button>
+        <button class="filter-btn gf" onclick="setFilter('canmake')" id="f-canmake">&#10003; Can Make</button>
+        <button class="filter-btn pf" onclick="setFilter('custom')" id="f-custom">&#10024; My Recipes</button>
+      </div>
+    </div>
+    <div class="nav-btns">
+      <button class="nav-btn prev" onclick="prevSet()" id="prevBtn" disabled>&larr; Prev</button>
+      <button class="nav-btn" onclick="nextSet()" id="nextBtn">Next &rarr;</button>
+      <button class="shuffle-btn" onclick="shuffleSet()">&#128256; Shuffle</button>
+    </div>
+  </div>
+</div>
+<div class="app-body" id="appBody">
+  <!-- PANTRY SIDEBAR -->
+  <aside class="pantry-panel" id="pantryPanel">
+    <div class="pantry-header">
+      <h3>&#129338; My Kitchen</h3>
+      <span class="p-count" id="pCount">0 items</span>
+    </div>
+    <div class="pantry-body">
+      <div class="combo-wrap">
+        <span class="combo-icon">&#128269;</span>
+        <input class="combo-input" id="comboInput" type="text" placeholder="Add ingredient..." autocomplete="off">
+        <div class="combo-dropdown" id="comboDd"></div>
+      </div>
+      <button class="add-btn" id="sideAddBtn" onclick="sidebarAdd()">&#65291; Add to Kitchen</button>
+      <div class="ps-label">In my kitchen</div>
+      <div class="pantry-items" id="pantryItems"></div>
+      <div class="p-footer">
+        <button class="pf-btn" onclick="switchView('pantry')">Manage &rarr;</button>
+        <button class="pf-btn danger" onclick="clearPantry()">Clear All</button>
+      </div>
+    </div>
+  </aside>
+  <!-- MEAL GRID -->
+  <div id="mealPage">
+    <div class="dishes-grid" id="dishesGrid"></div>
+  </div>
+  <!-- PANTRY FULL PAGE -->
+  <div class="pp-wrap page" id="pantryPage" style="grid-column:1/-1;display:none">
+    <div class="ph"><h2>&#129338; My Kitchen Pantry</h2><p>Manage your ingredients &middot; See what you can cook right now</p></div>
+    <div class="pp-body">
+      <div class="pp-stats" id="ppStats">
+        <div class="pp-stat"><span class="pp-stat-num" id="ppSI">0</span><span class="pp-stat-label">Items</span></div>
+        <div class="pp-divider"></div>
+        <div class="pp-stat"><span class="pp-stat-num" id="ppSB">0</span><span class="pp-stat-label">Breakfasts</span></div>
+        <div class="pp-divider"></div>
+        <div class="pp-stat"><span class="pp-stat-num" id="ppSL">0</span><span class="pp-stat-label">Lunches</span></div>
+        <div class="pp-divider"></div>
+        <div class="pp-stat"><span class="pp-stat-num" id="ppSD">0</span><span class="pp-stat-label">Dinners</span></div>
+      </div>
+      <div class="pp-sw">
+        <span class="pp-si">&#128269;</span>
+        <input class="pp-s" id="ppSearch" type="text" placeholder="Search or type ingredient to add..." autocomplete="off">
+        <div class="pp-dd" id="ppDd"></div>
+      </div>
+      <button class="pp-ab" id="ppAddBtn" onclick="ppAdd()" disabled>&#65291; Add to Kitchen</button>
+      <div class="pp-bulks">
+        <button class="pp-bb" onclick="addCat('basics')">&#65291; Basics</button>
+        <button class="pp-bb" onclick="addCat('spices')">&#65291; Spices</button>
+        <button class="pp-bb" onclick="addCat('vegetables')">&#65291; Vegetables</button>
+        <button class="pp-bb" onclick="addCat('dairy')">&#65291; Dairy</button>
+        <button class="pp-bb danger" onclick="clearPantry()">&#128465; Clear All</button>
+      </div>
+      <div class="pp-secs">
+        <div>
+          <div class="pp-sec-title">In My Kitchen <span id="ppMyC" style="font-size:.78rem;font-weight:400;color:var(--ink-light);margin-left:.3rem"></span></div>
+          <div class="pp-cloud" id="ppMy"></div>
+        </div>
+        <div>
+          <div class="pp-sec-title">All Ingredients (click to toggle)</div>
+          <div class="pp-cloud" id="ppAll"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- CUSTOM RECIPES PAGE -->
+  <div class="cp-wrap page" id="customPage" style="grid-column:1/-1;display:none">
+    <div class="cp-header">
+      <div><h2>&#10024; My Custom Recipes</h2><p>Add your own dishes &mdash; they appear in daily breakfast, lunch &amp; dinner suggestions</p></div>
+      <button class="add-dish-btn" onclick="openForm()">&#65291; Add New Recipe</button>
+    </div>
+    <div class="cp-body"><div id="cdGrid" class="cdg"></div></div>
+  </div>
+</div>
+<!-- DISH VIEW MODAL -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModalOuter(event)">
+  <div class="modal">
+    <div class="modal-hero" id="mHero">
+      <div class="mh-pat"></div>
+      <button class="m-close" onclick="closeModal()">&#10005;</button>
+      <span class="m-emoji" id="mEmoji"></span>
+      <h2 class="m-title" id="mTitle"></h2>
+      <span class="m-origin" id="mOrigin"></span>
+    </div>
+    <div class="m-body">
+      <div class="msec"><div class="msec-t">About</div><p class="m-desc" id="mDesc"></p></div>
+      <div class="msec"><div class="msec-t">Quick Info</div><div class="meta-g" id="mMeta"></div></div>
+      <div class="msec"><div class="msec-t">Ingredients &amp; Kitchen Match</div><div class="ing-g" id="mIng"></div></div>
+      <div class="msec" id="recSec" style="display:none"><div class="msec-t pur">Recipe / Instructions</div><div class="recipe-box"><pre id="mRecipe"></pre></div></div>
+      <div class="msec" id="tipSec" style="display:none"><div class="msec-t pur">My Notes &amp; Tips</div><div class="tips-box"><pre id="mTips"></pre></div></div>
+      <div class="msec" id="aiSec"><div class="msec-t">AI Recipe Tips</div><div id="aiContent"></div></div>
+      <div class="m-actions" id="mActions"></div>
+    </div>
+  </div>
+</div>
+<!-- DISH FORM MODAL -->
+<div class="form-overlay" id="formOverlay" onclick="closeFormOuter(event)">
+  <div class="dish-form">
+    <div class="form-head">
+      <div><h3 id="formTitle">&#10024; Add New Recipe</h3><p id="formSub">Create your custom dish &mdash; it will appear in daily suggestions</p></div>
+      <button class="form-close" onclick="closeForm()">&#10005;</button>
+    </div>
+    <div class="form-body">
+      <input type="hidden" id="editId">
+      <div class="fg">
+        <label class="fl">Choose Emoji <span>*</span></label>
+        <div class="emoji-row" id="emojiRow"></div>
+        <input class="fi" id="customEmoji" placeholder="Or type any emoji..." maxlength="4" style="margin-top:.4rem;width:130px">
+      </div>
+      <div class="form-grid">
+        <div class="fg"><label class="fl">Dish Name <span>*</span></label><input class="fi" id="dName" placeholder="e.g. Maa ki Dal" maxlength="80"></div>
+        <div class="fg"><label class="fl">Origin / Region</label><input class="fi" id="dOrigin" placeholder="e.g. Punjab, My Kitchen" maxlength="60"></div>
+        <div class="fg"><label class="fl">Meal Type <span>*</span></label>
+          <select class="fs" id="dCat">
+            <option value="breakfast">Breakfast</option>
+            <option value="lunch" selected>Lunch</option>
+            <option value="dinner">Dinner</option>
+          </select>
+        </div>
+        <div class="fg"><label class="fl">Diet Type <span>*</span></label>
+          <select class="fs" id="dType">
+            <option value="veg">Vegetarian</option>
+            <option value="nonveg">Non-Vegetarian</option>
+            <option value="vegan">Vegan</option>
+          </select>
+        </div>
+        <div class="fg"><label class="fl">Cook Time (minutes)</label><input class="fi" id="dTime" type="number" min="5" max="480" value="30"></div>
+        <div class="fg"><label class="fl">Difficulty</label>
+          <select class="fs" id="dEasy">
+            <option value="0">Moderate</option>
+            <option value="1">Easy / Quick</option>
+          </select>
+        </div>
+      </div>
+      <div class="fg full"><label class="fl">Description <span>*</span></label><textarea class="ft" id="dDesc" placeholder="Brief description of the dish, its flavour, texture, region..."></textarea></div>
+      <div class="fg full">
+        <label class="fl">Ingredients</label>
+        <div class="ing-builder">
+          <div class="ib-list" id="ibList"></div>
+          <div class="ib-add-row">
+            <div class="ib-add-wrap">
+              <input class="ib-input" id="ibInput" placeholder="Type ingredient name..." autocomplete="off">
+              <div class="ib-ac" id="ibAc"></div>
+            </div>
+            <select class="ib-type" id="ibType"><option value="required">Required</option><option value="optional">Optional</option></select>
+            <button class="ib-add-btn" onclick="addIngRow()">&#65291; Add</button>
+          </div>
+        </div>
+      </div>
+      <div class="fg full"><label class="fl">Recipe / Instructions</label><textarea class="ft tall" id="dRecipe" placeholder="Step-by-step cooking instructions (optional)..."></textarea></div>
+      <div class="fg full"><label class="fl">My Notes &amp; Tips</label><textarea class="ft" id="dTips" placeholder="Personal tips, shortcuts, substitutions, family secrets..."></textarea></div>
+      <div class="form-actions">
+        <button class="fa-btn primary" onclick="saveDish()">&#128190; Save Recipe</button>
+        <button class="fa-btn sec" onclick="closeForm()">Cancel</button>
+        <button class="fa-btn danger" id="deleteFormBtn" onclick="deleteFromForm()" style="display:none">&#128465; Delete</button>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const API='http://localhost:3947/api';
+
+// ── DISH DATABASE (built-in) ──────────────────────────────────────────────────
+// Format: [name,emoji,origin,cat(b/l/d),type(v/n/vn),time,easy,desc,"ing1|ing2|opt*"]
+const RAW=[
+["Masala Dosa","🫓","South India","b","v",30,0,"Crispy fermented rice-lentil crepe with spiced potato masala, sambar and chutneys.","Rice batter|Urad dal|Potatoes|Onion|Mustard seeds|Curry leaves|Turmeric|Green chilli*|Coconut chutney*|Sambar*"],
+["Plain Dosa","🫓","South India","b","v",20,1,"Golden crispy fermented rice crepe served with sambar and coconut chutney.","Rice batter|Oil|Sambar*|Coconut chutney*"],
+["Onion Dosa","🫓","Karnataka","b","v",20,1,"Crispy dosa topped with finely chopped onions before folding.","Rice batter|Onion|Green chilli|Oil"],
+["Rava Dosa","🫓","South India","b","v",20,1,"Instant crispy lacy semolina crepe, no fermentation needed.","Semolina|Rice flour|Maida*|Onion*|Cumin seeds|Black pepper|Oil"],
+["Ghee Roast Dosa","🫓","Mangalore","b","v",25,0,"Extra crispy dosa with generous ghee and sambar.","Rice batter|Ghee|Sambar|Coconut chutney"],
+["Neer Dosa","🫓","Mangalore","b","v",20,1,"Soft thin no-ferment rice crepe with coconut chutney.","Rice|Water|Coconut chutney"],
+["Idli Sambar","🍚","South India","b","v",20,1,"Steamed soft rice-lentil cakes with sambar and coconut chutney.","Rice batter|Urad dal|Sambar|Coconut chutney|Ghee*|Idli podi*"],
+["Rava Idli","🍚","Karnataka","b","v",25,1,"Instant semolina idlis with cashews and curry leaves.","Semolina|Curd|Mustard seeds|Cashews*|Curry leaves|Eno salt"],
+["Ghee Idli","🍚","South India","b","v",20,1,"Soft idlis with generous ghee drizzle and sambar.","Rice batter|Urad dal|Ghee|Sambar|Coconut chutney"],
+["Poha","🍛","Madhya Pradesh","b","v",15,1,"Flattened rice sautéed with mustard seeds, onion, peanuts, and turmeric.","Thick poha|Onion|Mustard seeds|Peanuts|Turmeric|Curry leaves|Lemon juice*|Coriander leaves*"],
+["Kanda Poha","🍛","Maharashtra","b","v",15,1,"Mumbai-style poha loaded with onions, peanuts, and tempered spices.","Thick poha|Onion|Mustard seeds|Peanuts|Curry leaves|Turmeric|Green chilli*"],
+["Indori Poha","🍛","Indore","b","v",15,1,"Indori poha with sev, fennel seeds, and lemon.","Thick poha|Onion|Fennel seeds|Sev|Lemon juice|Turmeric|Mustard seeds"],
+["Dadpe Pohe","🍛","Maharashtra","b","v",10,1,"No-cook raw poha with coconut, onion, and lemon. Fastest breakfast.","Thin poha|Grated coconut|Onion|Green chilli|Lemon juice|Coriander leaves"],
+["Aloo Paratha","🫓","Punjab","b","v",30,0,"Whole wheat flatbread stuffed with spiced mashed potato, pan-fried in ghee.","Wheat flour|Potatoes|Cumin seeds|Garam masala|Ghee|Coriander leaves|Green chilli*|Curd*"],
+["Pyaz Paratha","🫓","Punjab","b","v",25,0,"Flatbread stuffed with spiced onion filling.","Wheat flour|Onion|Green chilli|Coriander leaves|Carom seeds|Ghee"],
+["Methi Paratha","🫓","Punjab","b","v",25,0,"Whole wheat flatbread loaded with fresh fenugreek leaves.","Wheat flour|Methi leaves|Green chilli|Garlic|Ghee|Carom seeds"],
+["Gobi Paratha","🫓","Punjab","b","v",30,0,"Flatbread stuffed with spiced grated cauliflower.","Wheat flour|Cauliflower|Cumin seeds|Green chilli|Garam masala|Ghee"],
+["Paneer Paratha","🫓","Punjab","b","v",30,0,"Flatbread stuffed with crumbled paneer and spices.","Wheat flour|Paneer|Green chilli|Garam masala|Coriander leaves|Ghee"],
+["Upma","🍲","South India","b","v",20,1,"Semolina porridge with mustard seeds, curry leaves, and vegetables.","Semolina|Onion|Mustard seeds|Curry leaves|Green chilli*|Cashews*|Vegetables*"],
+["Rava Upma","🍲","Karnataka","b","v",20,1,"Classic semolina upma with ghee-roasted cashews and peanuts.","Semolina|Peanuts|Cashews|Curry leaves|Mustard seeds|Green chilli*|Ghee"],
+["Pongal","🍚","Tamil Nadu","b","v",25,1,"Creamy rice and moong dal porridge with ghee, pepper, and cumin.","Rice|Moong dal|Ghee|Black pepper|Cumin seeds|Cashews*|Curry leaves"],
+["Ven Pongal","🍚","Tamil Nadu","b","v",25,1,"Peppery pongal with generous ghee and curry leaves.","Rice|Moong dal|Ghee|Black pepper|Cumin seeds|Curry leaves|Ginger"],
+["Khichdi","🍲","Pan India","b","v",25,1,"Rice and moong dal with turmeric and ghee. India's comfort food.","Rice|Moong dal|Ghee|Turmeric|Cumin seeds|Pickle*"],
+["Thepla","🫓","Gujarat","b","v",20,1,"Soft spiced methi flatbread with whole wheat and yogurt.","Wheat flour|Methi leaves|Curd|Turmeric|Chilli powder|Oil"],
+["Dhokla","🟡","Gujarat","b","v",30,0,"Steamed spongy chickpea flour cake with mustard-chilli tempering.","Besan|Curd|Eno salt|Mustard seeds|Green chilli|Lemon juice|Sugar"],
+["Medu Vada","🍩","Karnataka","b","v",30,0,"Crispy urad dal donuts served with sambar and chutney.","Urad dal|Ginger|Green chilli*|Curry leaves|Black pepper|Sambar*|Coconut chutney"],
+["Sabudana Khichdi","🍚","Maharashtra","b","v",20,1,"Tapioca pearls with peanuts, cumin, and green chilli.","Sabudana|Peanuts|Cumin seeds|Green chilli*|Potatoes*|Lemon juice*"],
+["Besan Cheela","🥞","Rajasthan","b","v",15,1,"Savory chickpea flour pancakes with onion and spices.","Besan|Onion|Tomato*|Green chilli*|Carom seeds|Coriander leaves|Turmeric"],
+["Paneer Cheela","🥞","North India","b","v",20,1,"Besan cheela stuffed with spiced crumbled paneer.","Besan|Paneer|Onion|Green chilli|Coriander leaves|Turmeric|Cumin seeds"],
+["Moong Dal Cheela","🥞","North India","b","v",20,1,"Green moong dal pancakes with ginger and green chilli.","Moong dal|Ginger|Green chilli|Cumin seeds|Onion*|Mint chutney*"],
+["Uttapam","🥞","Tamil Nadu","b","v",20,1,"Thick rice pancake topped with onions, tomatoes, and green chillies.","Rice batter|Urad dal|Onion|Tomato|Green chilli*|Coriander leaves*"],
+["Pesarattu","🥞","Andhra Pradesh","b","v",20,1,"Green moong dal crepe with ginger and onion.","Moong dal|Ginger|Green chilli*|Onion*|Cumin seeds|Oil"],
+["Misal Pav","🍛","Maharashtra","b","v",40,0,"Spiced sprouted curry with farsan, onion, and lemon with pav bread.","Sprouted matki|Pav buns|Onion|Tomato|Chilli powder|Garam masala|Lemon juice"],
+["Vada Pav","🍔","Mumbai","b","v",30,0,"Deep-fried spiced potato fritter in pav bun with chutneys.","Potatoes|Pav buns|Besan|Garlic|Dry red chilli|Oil"],
+["Chole Bhature","🍛","Delhi","b","v",45,0,"Fluffy deep-fried bread with spicy chickpea curry.","Maida|Chickpeas|Onion|Tomato|Chole masala|Ginger|Garlic|Curd*"],
+["Puri Bhaji","🫓","Maharashtra","b","v",30,0,"Deep-fried puffed wheat bread with spiced potato curry.","Wheat flour|Oil|Potatoes|Tomato|Cumin seeds|Turmeric"],
+["Adai","🥞","Tamil Nadu","b","v",25,0,"Mixed lentil and rice pancake with onion and curry leaves.","Rice|Chana dal|Toor dal|Moong dal|Onion|Curry leaves|Dry red chilli"],
+["Thalipeeth","🥞","Maharashtra","b","v",20,1,"Multigrain spiced flatbread.","Wheat flour|Rice flour|Besan|Onion|Green chilli|Coriander leaves|Sesame seeds"],
+["Puttu Kadala","🍚","Kerala","b","v",30,0,"Steamed rice flour cylinders with black chickpea curry.","Rice flour|Grated coconut|Chickpeas|Coconut milk|Curry leaves|Dry red chilli"],
+["Appam with Stew","🥞","Kerala","b","v",40,0,"Lacy fermented rice hoppers with coconut milk vegetable stew.","Rice batter|Coconut milk|Vegetables|Whole spices|Curry leaves"],
+["Idiyappam","🍜","Kerala","b","v",20,1,"Steamed rice noodle discs with coconut milk or chutney.","Rice flour|Water|Coconut milk*|Coconut chutney*"],
+["Sevai","🍜","Tamil Nadu","b","v",20,1,"Steamed rice noodles with coconut chutney.","Rice vermicelli|Coconut chutney|Sesame oil*|Sambar*"],
+["Lemon Sevai","🍜","Tamil Nadu","b","v",20,1,"Rice noodles with lemon juice, mustard seeds, and peanuts.","Rice vermicelli|Lemon juice|Mustard seeds|Peanuts|Curry leaves|Turmeric"],
+["Egg Omelette","🍳","Pan India","b","n",10,1,"Simple Indian omelette with onion, tomato, and green chilli.","Eggs|Onion|Tomato|Green chilli|Coriander leaves|Oil"],
+["Masala Omelette","🍳","Pan India","b","n",12,1,"Fluffy egg omelette with spiced onion-tomato filling.","Eggs|Onion|Tomato|Green chilli|Garam masala*|Coriander leaves|Oil"],
+["Egg Bhurji","🍳","Mumbai","b","n",15,1,"Scrambled eggs with onion, tomato, and spices.","Eggs|Onion|Tomato|Green chilli|Turmeric|Butter"],
+["Anda Paratha","🫓","North India","b","n",20,1,"Egg cooked into a paratha while frying.","Wheat flour|Eggs|Onion*|Green chilli*|Cumin seeds|Oil"],
+["Kheema Pav","🍞","Mumbai","b","n",30,0,"Spiced minced meat curry with soft pav bread.","Mutton mince|Pav buns|Onion|Tomato|Ginger|Garlic|Garam masala"],
+["Suji Halwa","🍮","North India","b","v",20,1,"Semolina pudding with ghee, sugar, and dry fruits.","Semolina|Ghee|Sugar|Water|Cardamom|Cashews*|Raisins*"],
+["Bread Upma","🍞","Pan India","b","v",15,1,"Stale bread cubes stir-fried with onion, tomato, and spices.","Bread|Onion|Tomato|Green chilli|Mustard seeds|Curry leaves|Turmeric"],
+["Makki Roti","🫓","Punjab","b","v",25,0,"Cornmeal flatbread eaten with sarson ka saag and butter.","Maize flour|Ghee|Water"],
+["Bajra Roti","🫓","Rajasthan","b","v",20,1,"Pearl millet flatbread with garlic and ghee.","Bajra flour|Garlic*|Ghee"],
+["Avocado Toast","🥑","Australia","b","vn",10,1,"Crushed avocado on sourdough with lemon and pepper flakes.","Bread|Avocado|Lemon juice|Olive oil|Red pepper flakes*|Eggs*"],
+["Shakshuka","🍳","Middle East","b","v",25,1,"Eggs poached in spiced tomato-pepper sauce.","Eggs|Tomato|Bell pepper|Onion|Cumin seeds|Paprika|Garlic|Feta*"],
+["Pancakes","🥞","USA","b","v",20,1,"Fluffy American-style pancakes with maple syrup.","Wheat flour|Eggs|Milk|Baking powder|Sugar|Butter|Maple syrup*"],
+["Oatmeal","🥣","UK","b","vn",10,1,"Creamy rolled oats with fresh fruits and honey.","Oats|Milk|Honey*|Banana*|Cinnamon*"],
+["Miso Soup","🍵","Japan","b","v",10,1,"Simple fermented soybean paste soup with tofu.","Miso paste|Tofu*|Spring onion*"],
+["Congee","🍚","China","b","v",45,1,"Chinese rice porridge with ginger and sesame oil.","Rice|Ginger|Soy sauce*|Sesame oil*|Spring onion*"],
+["Bruschetta","🍅","Italy","b","vn",10,1,"Toasted garlic bread topped with fresh tomatoes and basil.","Bread|Tomato|Garlic|Basil leaves|Olive oil"],
+["French Toast","🍞","France","b","v",15,1,"Bread soaked in egg-milk mixture, pan-fried with cinnamon.","Bread|Eggs|Milk|Cinnamon|Sugar|Butter|Maple syrup*"],
+["Turkish Menemen","🍳","Turkey","b","v",20,1,"Scrambled eggs with tomatoes and green peppers.","Eggs|Tomato|Bell pepper|Onion|Olive oil"],
+["Dal Tadka","🍛","North India","l","v",30,1,"Yellow lentils with sizzling ghee tadka of cumin, garlic, and red chilli.","Toor dal|Ghee|Cumin seeds|Garlic|Dry red chilli|Tomato*|Turmeric"],
+["Dal Makhani","🍛","Punjab","l","v",60,0,"Black lentils slow-cooked with butter and cream.","Black urad dal|Rajma*|Butter|Cream|Tomato|Ginger|Garlic"],
+["Moong Dal","🍲","Pan India","l","v",25,1,"Simple yellow mung bean dal with turmeric and ghee.","Moong dal|Turmeric|Ghee|Cumin seeds|Garlic"],
+["Chana Dal","🍲","North India","l","v",40,1,"Split chickpea dal with amchur and garam masala.","Chana dal|Onion|Tomato|Cumin seeds|Coriander powder|Garam masala|Amchur*"],
+["Dal Fry","🍛","North India","l","v",30,1,"Dhaba-style mixed dal with heavy ghee tadka.","Toor dal|Moong dal|Ghee|Cumin seeds|Garlic|Onion|Tomato|Dry red chilli"],
+["Rajma Chawal","🍛","Punjab","l","v",45,0,"Kidney beans in rich tomato-onion gravy with basmati rice.","Rajma|Onion|Tomato|Ginger|Garlic|Rajma masala|Basmati rice"],
+["Chole","🍛","Punjab","l","v",50,0,"Spiced chickpea curry with tangy amchur.","Chickpeas|Onion|Tomato|Chole masala|Amchur*|Ginger|Garlic"],
+["Palak Paneer","🥬","North India","l","v",35,0,"Cottage cheese in smooth vibrant spinach gravy.","Spinach|Paneer|Onion|Tomato|Garam masala|Cream*|Ginger|Garlic"],
+["Paneer Butter Masala","🧀","North India","l","v",30,0,"Paneer in rich tomato-cashew-cream gravy.","Paneer|Tomato|Cashews|Butter|Cream|Ginger|Garlic|Kasuri methi*"],
+["Kadai Paneer","🧀","North India","l","v",35,0,"Paneer and bell peppers in freshly ground kadai spices.","Paneer|Capsicum|Onion|Tomato|Cumin seeds|Coriander seeds|Ginger|Garlic"],
+["Matar Paneer","🧀","North India","l","v",30,0,"Paneer and green peas in tomato-onion gravy.","Paneer|Green peas|Onion|Tomato|Garam masala|Turmeric|Cream*"],
+["Butter Chicken","🍗","Delhi","l","n",50,0,"Grilled chicken in silky tomato-butter-cream sauce.","Chicken|Butter|Cream|Tomato|Kasuri methi*|Ginger|Garlic|Chicken masala"],
+["Chicken Curry","🍗","Pan India","l","n",50,0,"Bone-in chicken in aromatic onion-tomato masala.","Chicken|Onion|Tomato|Ginger|Garlic|Chicken masala|Coriander leaves"],
+["Kadai Chicken","🍗","North India","l","n",40,0,"Chicken and capsicum in freshly ground kadai masala.","Chicken|Capsicum|Onion|Tomato|Cumin seeds|Coriander seeds|Ginger|Garlic"],
+["Mutton Curry","🍖","Pan India","l","n",75,0,"Slow-cooked bone-in mutton in bold spiced gravy.","Mutton|Onion|Tomato|Ginger|Garlic|Mutton masala|Whole spices"],
+["Mutton Rogan Josh","🍖","Kashmir","l","n",90,0,"Slow-cooked mutton in Kashmiri red chilli gravy.","Mutton|Kashmiri chilli|Fennel powder|Ginger powder|Curd|Whole spices"],
+["Fish Curry Kerala","🐟","Kerala","l","n",40,0,"Fish simmered in coconut milk with raw mango and curry leaves.","Fish|Coconut milk|Raw mango*|Curry leaves|Turmeric|Chilli powder"],
+["Prawn Masala","🦐","Coastal India","l","n",30,0,"Prawns in spicy coconut or tomato masala.","Prawns|Onion|Tomato|Coconut milk*|Ginger|Garlic|Curry leaves"],
+["Egg Curry","🥚","Pan India","l","n",25,1,"Hard-boiled eggs in spicy tomato-onion gravy.","Eggs|Onion|Tomato|Ginger|Garlic|Curry powder|Turmeric"],
+["Hyderabadi Chicken Biryani","🍚","Hyderabad","l","n",90,0,"Marinated chicken with aged basmati on dum.","Chicken|Basmati rice|Fried onions|Saffron*|Mint leaves|Curd|Biryani masala"],
+["Veg Biryani","🍚","Hyderabad","l","v",60,0,"Fragrant basmati layered with spiced vegetables on dum.","Basmati rice|Vegetables|Biryani masala|Mint leaves|Saffron*|Fried onions|Curd"],
+["Sambar Rice","🍛","South India","l","v",30,1,"Steamed rice with tangy tamarind-lentil sambar.","Rice|Toor dal|Tamarind|Tomato|Sambar powder|Curry leaves"],
+["Curd Rice","🍚","South India","l","v",15,1,"Cooked rice in yogurt with mustard and curry leaf tempering.","Rice|Curd|Mustard seeds|Curry leaves|Green chilli*|Ginger"],
+["Lemon Rice","🍋","South India","l","v",15,1,"Rice with lemon juice, mustard seeds, peanuts, and curry leaves.","Cooked rice|Lemon juice|Mustard seeds|Peanuts|Curry leaves|Turmeric"],
+["Coconut Rice","🍚","South India","l","v",15,1,"Rice mixed with fresh coconut and mustard seed tempering.","Cooked rice|Grated coconut|Mustard seeds|Curry leaves|Dry red chilli|Cashews*"],
+["Pav Bhaji","🍞","Mumbai","l","v",35,0,"Mashed vegetable curry with buttered pav buns.","Vegetables|Pav buns|Butter|Pav bhaji masala|Onion|Tomato|Lemon juice"],
+["Aloo Gobi","🥦","Punjab","l","v",25,1,"Dry potato and cauliflower with cumin, coriander, and turmeric.","Potatoes|Cauliflower|Cumin seeds|Turmeric|Coriander powder|Amchur*"],
+["Aloo Matar","🥔","North India","l","v",25,1,"Potatoes and green peas in tomato-cumin gravy.","Potatoes|Green peas|Tomato|Cumin seeds|Turmeric|Garam masala"],
+["Baingan Bharta","🍆","Punjab","l","v",30,1,"Fire-roasted eggplant mashed with tomatoes, onion, and spices.","Eggplant|Onion|Tomato|Garlic|Cumin seeds|Coriander leaves|Green chilli*"],
+["Sarson Ka Saag","🥬","Punjab","l","v",60,0,"Slow-cooked mustard and spinach leaves with white butter.","Mustard greens|Spinach|Garlic|Ginger|Ghee|Maize flour"],
+["Kadhi Pakora","🍲","Punjab","l","v",40,0,"Yogurt-besan curry with fried pakoras floating in it.","Curd|Besan|Mustard seeds|Fenugreek seeds|Dry red chilli|Curry leaves|Ghee"],
+["Gujarati Kadhi","🍲","Gujarat","l","v",20,1,"Sweet and tangy yogurt curry with curry leaves.","Curd|Besan|Ginger|Green chilli|Sugar|Mustard seeds|Curry leaves"],
+["Haleem","🍲","Hyderabad","l","n",180,0,"Slow-cooked wheat and meat porridge with fried onions.","Broken wheat|Mutton|Chana dal|Ginger|Garlic|Fried onions|Lemon juice|Mint leaves"],
+["Kosha Mangsho","🍖","Bengal","l","n",75,0,"Slow-cooked dry mutton curry with caramelized onions.","Mutton|Onion|Mustard oil|Curd|Whole spices|Potatoes*"],
+["Aloo Posto","🥔","West Bengal","l","v",20,1,"Potatoes with poppy seed paste. Simple Bengali comfort food.","Potatoes|Poppy seeds|Mustard oil|Green chilli|Turmeric"],
+["Machher Jhol","🐟","Bengal","l","n",30,0,"Light fish curry with potatoes and tomatoes.","Fish|Potatoes|Tomato|Turmeric|Mustard oil|Green chilli"],
+["Spaghetti Carbonara","🍝","Italy","l","n",25,0,"Roman pasta with eggs, guanciale, Pecorino, and black pepper.","Pasta|Eggs|Parmesan|Black pepper|Oil|Garlic*"],
+["Pad Thai","🍜","Thailand","l","n",25,0,"Stir-fried rice noodles with eggs, shrimp, tamarind, and peanuts.","Rice noodles|Eggs|Tamarind|Fish sauce|Peanuts|Bean sprouts|Garlic"],
+["Greek Salad","🥗","Greece","l","vn",10,1,"Tomatoes, cucumber, olives, and feta with olive oil.","Tomato|Cucumber|Feta*|Olive oil|Onion|Lemon juice"],
+["Nasi Goreng","🍳","Indonesia","l","n",20,1,"Indonesian fried rice with soy sauce and fried egg.","Rice|Eggs|Soy sauce|Garlic|Onion|Chilli*"],
+["Tom Yum Soup","🍲","Thailand","l","n",25,1,"Hot and sour Thai soup with lemongrass and shrimp.","Prawns|Lemon juice|Garlic|Ginger|Mushrooms|Tomato"],
+["Falafel Wrap","🌯","Middle East","l","vn",20,1,"Crispy chickpea falafel in flatbread with hummus.","Chickpeas|Bread|Tomato|Cucumber|Garlic|Sesame seeds"],
+["Kung Pao Chicken","🍗","China","l","n",25,0,"Stir-fried chicken with peanuts and dried chillies.","Chicken|Peanuts|Dry red chilli|Garlic|Ginger|Soy sauce|Sesame oil"],
+["Green Thai Curry","🟢","Thailand","l","n",30,0,"Chicken in creamy green curry with coconut milk.","Chicken|Coconut milk|Garlic|Ginger|Green chilli|Lemon juice"],
+["Dal Chawal","🍛","Pan India","d","v",30,1,"Comforting yellow dal over steamed rice with ghee.","Moong dal|Rice|Ghee|Turmeric|Cumin seeds|Lemon juice*"],
+["Roti Sabzi","🫓","Pan India","d","v",25,1,"Simple whole wheat chapati with seasonal vegetable curry.","Wheat flour|Seasonal vegetables|Oil|Cumin seeds|Turmeric|Coriander leaves"],
+["Chicken Tikka Masala","🍗","North India","d","n",55,0,"Grilled chicken in spiced tomato-cream masala.","Chicken|Curd|Tikka masala|Tomato|Cream|Ginger|Garlic|Kasuri methi*"],
+["Tandoori Chicken","🍗","Punjab","d","n",60,0,"Chicken marinated in yogurt and spices, roasted in tandoor.","Chicken|Curd|Tandoori masala|Lemon juice|Kashmiri chilli|Mustard oil*"],
+["Seekh Kebab","🍢","Mughal","d","n",30,0,"Spiced minced meat on skewers, grilled until smoky.","Mutton mince|Onion|Green chilli*|Garam masala|Ginger|Garlic|Lemon juice"],
+["Vegetable Pulao","🍚","Pan India","d","v",30,1,"Fragrant basmati rice with whole spices and vegetables.","Basmati rice|Vegetables|Whole spices|Onion|Mint leaves*|Ghee"],
+["Mushroom Pulao","🍚","North India","d","v",25,1,"Basmati rice with mushrooms and whole spices.","Basmati rice|Mushrooms|Onion|Whole spices|Ghee|Mint leaves*"],
+["Malai Kofta","🧀","North India","d","v",60,0,"Paneer and potato dumplings in rich cream and tomato gravy.","Paneer|Potatoes|Cream|Tomato|Cashews*|Garam masala|Ginger|Garlic"],
+["Paneer Bhurji","🧀","Punjab","d","v",20,1,"Crumbled paneer scrambled with onion, tomato, and spices.","Paneer|Onion|Tomato|Green chilli*|Turmeric|Coriander leaves|Butter*"],
+["Aloo Baingan","🍆","North India","d","v",25,1,"Eggplant and potato stir-fry with mustard seeds.","Eggplant|Potatoes|Mustard seeds|Onion|Tomato|Turmeric|Coriander leaves"],
+["Bhindi Masala","🥒","North India","d","v",20,1,"Stir-fried okra with onion, tomato, and spices.","Okra|Onion|Tomato|Cumin seeds|Coriander powder|Amchur*|Turmeric"],
+["Mushroom Masala","🍄","North India","d","v",25,1,"Mushrooms in spiced tomato-onion gravy.","Mushrooms|Onion|Tomato|Ginger|Garlic|Garam masala|Cream*"],
+["Mixed Veg Curry","🥦","Pan India","d","v",30,1,"Seasonal mixed vegetables in tomato-onion gravy.","Vegetables|Onion|Tomato|Ginger|Garlic|Garam masala|Cumin seeds"],
+["Aloo Jeera","🥔","North India","d","v",20,1,"Boiled potatoes stir-fried with cumin seeds.","Potatoes|Cumin seeds|Coriander leaves|Green chilli*|Lemon juice"],
+["Palak Dal","🥬","North India","d","v",30,1,"Spinach and lentil curry with turmeric and garlic.","Spinach|Toor dal|Garlic|Onion|Tomato|Turmeric|Cumin seeds|Ghee"],
+["Tomato Rasam","🍲","Tamil Nadu","d","v",15,1,"Thin peppery tomato soup. South Indian digestive dinner.","Tomato|Tamarind|Black pepper|Cumin seeds|Garlic|Curry leaves|Coriander leaves"],
+["Avial","🥗","Kerala","d","v",35,0,"Mixed vegetables with coconut paste and sour curd.","Vegetables|Grated coconut|Curd|Curry leaves|Coconut oil|Green chilli"],
+["Thoran","🥦","Kerala","d","v",20,1,"Cabbage stir-fried with coconut and curry leaves.","Cabbage|Grated coconut|Mustard seeds|Curry leaves|Green chilli|Turmeric"],
+["Prawn Biryani","🦐","Coastal India","d","n",60,0,"Basmati rice layered with spiced prawns on dum.","Basmati rice|Prawns|Fried onions|Mint leaves|Curd|Biryani masala"],
+["Fish Fry","🐟","Coastal India","d","n",20,1,"Marinated fish pan-fried crispy.","Fish|Turmeric|Chilli powder|Lemon juice|Ginger|Garlic|Oil"],
+["Chicken 65","🍗","Tamil Nadu","d","n",30,0,"Deep-fried spicy chicken marinated in chilli and spices.","Chicken|Curd|Corn flour|Kashmiri chilli|Curry leaves|Ginger|Garlic|Lemon juice*"],
+["Keema Matar","🍖","North India","d","n",40,0,"Minced meat and peas in aromatic tomato-onion gravy.","Mutton mince|Green peas|Onion|Tomato|Ginger|Garlic|Garam masala"],
+["Dahi Chicken","🍗","North India","d","n",45,0,"Chicken in yogurt-based gravy with cardamom.","Chicken|Curd|Onion|Cardamom|Whole spices|Ginger|Garlic|Cream*"],
+["Margherita Pizza","🍕","Italy","d","v",30,0,"Classic Neapolitan pizza with tomato sauce and fresh mozzarella.","Wheat flour|Tomato|Cheese|Basil leaves|Olive oil|Garlic"],
+["Pasta Arrabbiata","🍝","Italy","d","v",20,1,"Spicy tomato pasta with garlic and chillies.","Pasta|Tomato|Garlic|Dry red chilli|Olive oil|Coriander leaves*"],
+["Chicken Shawarma","🌯","Middle East","d","n",40,0,"Marinated chicken served in pita with garlic sauce.","Chicken|Bread|Garlic|Tomato|Cucumber|Lemon juice"],
+["Fettuccine Alfredo","🍝","Italy","d","v",20,1,"Fettuccine in rich butter-Parmesan cream sauce.","Pasta|Butter|Cream|Cheese|Garlic*|Black pepper"],
+["Chicken Teriyaki","🍗","Japan","d","n",25,1,"Grilled chicken glazed with sweet soy teriyaki sauce.","Chicken|Soy sauce|Sugar|Garlic|Ginger|Sesame seeds"],
+["Kimchi Jjigae","🍲","Korea","d","n",30,1,"Korean kimchi stew with tofu and pork.","Tofu|Onion|Garlic|Sesame oil|Soy sauce"],
+["Shakshuka Dinner","🍳","North Africa","d","v",25,1,"Eggs poached in spiced tomato sauce. Light satisfying dinner.","Eggs|Tomato|Bell pepper|Onion|Cumin seeds|Paprika|Garlic|Feta*"],
+["Lentil Soup","🍲","Turkey","d","vn",30,1,"Red lentil soup with cumin, paprika, and lemon.","Masoor dal|Onion|Carrot|Cumin seeds|Paprika|Lemon juice|Olive oil"],
+["Mac and Cheese","🧀","USA","d","v",25,1,"Creamy macaroni pasta in rich cheddar cheese sauce.","Pasta|Cheese|Butter|Milk|Wheat flour|Black pepper"],
+["Vegetable Stir Fry","🥦","China","d","vn",15,1,"Mixed vegetables stir-fried in garlic-ginger soy sauce.","Vegetables|Garlic|Ginger|Soy sauce|Sesame oil|Oil"],
+];
+
+// ── MASTER INGREDIENTS ────────────────────────────────────────────────────────
+const EXTRA_ING=["Maize flour","Bajra flour","Jowar flour","Ragi flour","Oats","Corn flour","Semolina","Thick poha","Thin poha","Sabudana","Barley","Idli podi","Sev","Rice batter","Rice vermicelli","Rice noodles","Urad dal","Rajma","Black urad dal","Chickpeas","Lobia","Matki","Sprouted matki","Moong dal","Toor dal","Chana dal","Masoor dal","Bitter gourd","Ridge gourd","Ash gourd","Bottle gourd","Pumpkin","Drumstick","Raw mango","Raw banana","Yam","Radish","Turnip","Beetroot","Sweet potato","Broccoli","Celery","Zucchini","Bell pepper","Capsicum","Eggplant","Okra","Cluster beans","French beans","Banana flower","Cauliflower","Cabbage","Carrot","Green peas","Mushrooms","Avocado","Tomato","Onion","Garlic","Ginger","Potatoes","Spinach","Mustard greens","Methi leaves","Lemon juice","Tamarind","Kokum","Pomegranate","Banana","Pineapple","Apple","Milk","Curd","Paneer","Cheese","Butter","Cream","Ghee","Khoya","Condensed milk","Cream cheese","Feta","Mozzarella","Parmesan","Eggs","Turmeric","Cumin seeds","Mustard seeds","Coriander seeds","Coriander powder","Fenugreek seeds","Carom seeds","Fennel seeds","Kalonji","Dry red chilli","Kashmiri chilli","Green chilli","Black pepper","White pepper","Cardamom","Cloves","Cinnamon","Bay leaf","Star anise","Mace","Nutmeg","Paprika","Chilli powder","Garam masala","Biryani masala","Sambar powder","Rasam powder","Pav bhaji masala","Chole masala","Rajma masala","Chana masala","Tikka masala","Kasuri methi","Amchur","Hing","Panch phoron","Saffron","Kewra water","Rose water","Coriander leaves","Mint leaves","Curry leaves","Basil leaves","Parsley","Thyme","Rosemary","Oregano","Grated coconut","Coconut milk","Oil","Mustard oil","Sesame oil","Olive oil","Coconut oil","Groundnut oil","Soy sauce","Fish sauce","Tamarind chutney","Green chutney","Mint chutney","Coconut chutney","Tomato ketchup","Chilli sauce","Miso paste","Tahini","Cashews","Peanuts","Almonds","Walnuts","Pistachios","Sesame seeds","Poppy seeds","Sunflower seeds","Chia seeds","Sugar","Jaggery","Honey","Maple syrup","Brown sugar","Baking powder","Baking soda","Eno salt","Yeast","Cornstarch","All-purpose flour","Maida","Vegetable stock","Chicken stock","Vinegar","Rice vinegar","Chicken","Mutton","Beef","Pork","Fish","Prawns","Crab","Eggs","Mutton mince","Chicken mince","Bacon","Sausage","Tuna","Salmon","Bread","Pav buns","Pasta","Noodles","Rice flour","Wheat flour","Basmati rice","Rice","Broken wheat","Vermicelli","Oats","Cooked rice","Whole spices","Fried onions","Sambar","Coconut chutney","Eno salt","Pickles","Avocado","Bean sprouts"];
+
+const CATS={
+  basics:['Rice','Wheat flour','Moong dal','Toor dal','Chana dal','Basmati rice','Oil','Salt','Sugar','Ghee'],
+  spices:['Turmeric','Cumin seeds','Mustard seeds','Coriander powder','Garam masala','Chilli powder','Cardamom','Cinnamon','Cloves','Bay leaf','Kashmiri chilli','Fennel seeds'],
+  vegetables:['Onion','Tomato','Potatoes','Garlic','Ginger','Green chilli','Spinach','Cauliflower','Capsicum','Carrot','Green peas','Eggplant'],
+  dairy:['Milk','Curd','Paneer','Butter','Cream','Ghee','Eggs','Cheese'],
+};
+
+// Build master ingredient list
+const _ingSet=new Set();
+RAW.forEach(r=>r[8].split('|').forEach(s=>_ingSet.add(s.replace('*','').trim())));
+EXTRA_ING.forEach(i=>_ingSet.add(i.trim()));
+let MASTER=[..._ingSet].filter(Boolean).sort((a,b)=>a.toLowerCase().localeCompare(b.toLowerCase()));
+
+function refreshMaster(customDishes){
+  customDishes.forEach(d=>(d.ingredients||[]).forEach(i=>{
+    const nm=(i.name||i.n||'').trim();
+    if(nm&&!MASTER.find(m=>m.toLowerCase()===nm.toLowerCase())){MASTER.push(nm);}
+  }));
+  MASTER.sort((a,b)=>a.toLowerCase().localeCompare(b.toLowerCase()));
+}
+
+// ── STATE ──────────────────────────────────────────────────────────────────────
+const TODAY=new Date();
+const catMap={b:'breakfast',l:'lunch',d:'dinner'};
+const typeMap={v:'veg',n:'nonveg',vn:'vegan'};
+let view='breakfast',filter='all',setIdx=0;
+let pantry=[],customs=[],curDish=null,formIngs=[],editId=null,comboSel='',ppSel='';
+
+// Parse built-in
+const BUILTIN=RAW.map(r=>{
+  const [n,e,o,c,t,tm,ez,d,is]=r;
+  return{n,e,o,cat:catMap[c],type:typeMap[t],time:+tm,easy:!!ez,d,ing:is.split('|').map(s=>{const opt=s.endsWith('*');return{n:s.replace('*','').trim(),m:!opt};}),custom:false};
+});
+
+function parseCustom(d){
+  return{n:d.name,e:d.emoji,o:d.origin,cat:d.category,type:d.type,time:d.time,easy:d.easy,d:d.description,
+    ing:(d.ingredients||[]).map(i=>({n:i.name||i.n,m:i.mandatory!==undefined?i.mandatory:(i.m!==undefined?i.m:true)})),
+    recipe:d.recipe||'',tips:d.tips||'',custom:true,id:d.id};
+}
+
+function allDishes(meal){return[...BUILTIN.filter(d=>d.cat===meal),...customs.filter(d=>d.category===meal).map(parseCustom)];}
+function hasPantry(nm){return pantry.some(p=>p.toLowerCase()===nm.toLowerCase());}
+function matchScore(dish){
+  const req=dish.ing.filter(i=>i.m),opt=dish.ing.filter(i=>!i.m);
+  const have=req.filter(i=>hasPantry(i.n)),miss=req.filter(i=>!hasPantry(i.n));
+  return{score:req.length?have.length/req.length:1,have,missing:miss,optHave:opt.filter(i=>hasPantry(i.n)),canMake:!miss.length};
+}
+function countMakeable(meal){return allDishes(meal).filter(d=>matchScore(d).canMake).length;}
+function seededRnd(s){return()=>{s=Math.sin(s)*10000;return s-Math.floor(s);};}
+function shuffle(arr,seed){const a=[...arr],r=seededRnd(seed);for(let i=a.length-1;i>0;i--){const j=Math.floor(r()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function daySeed(){return TODAY.getFullYear()*10000+TODAY.getMonth()*100+TODAY.getDate();}
+
+function getPool(){
+  let pool=allDishes(view);
+  if(filter==='veg')pool=pool.filter(d=>d.type==='veg'||d.type==='vegan');
+  if(filter==='nonveg')pool=pool.filter(d=>d.type==='nonveg');
+  if(filter==='easy')pool=pool.filter(d=>d.easy);
+  if(filter==='custom')pool=pool.filter(d=>d.custom);
+  if(filter==='canmake'){let cm=pool.filter(d=>matchScore(d).canMake);if(!cm.length)cm=pool.filter(d=>matchScore(d).score>=0.6).sort((a,b)=>matchScore(b).score-matchScore(a).score);pool=cm;}
+  return pool;
+}
+function getSets(){
+  const pool=getPool(),seed=daySeed()+view.charCodeAt(0)*7+filter.charCodeAt(0)*3;
+  let ordered;
+  if(pantry.length&&filter!=='canmake'&&filter!=='custom'){
+    const byS={};pool.forEach(d=>{const s=Math.round(matchScore(d).score*10);if(!byS[s])byS[s]=[];byS[s].push(d);});
+    ordered=Object.keys(byS).sort((a,b)=>+b-+a).flatMap(k=>shuffle(byS[k],seed+parseInt(k)));
+  }else{ordered=shuffle(pool,seed);}
+  const sets=[];
+  for(let i=0;i<ordered.length;i+=10)if(ordered.slice(i,i+10).length)sets.push(ordered.slice(i,i+10));
+  return sets;
+}
+
+// ── DATE DISPLAY ───────────────────────────────────────────────────────────────
+function initDate(){
+  const days=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  document.getElementById('dateDisplay').innerHTML=
+    `<div class="date-day">${String(TODAY.getDate()).padStart(2,'0')}</div>
+     <div class="date-rest">${days[TODAY.getDay()]} &middot; ${months[TODAY.getMonth()]} ${TODAY.getFullYear()}</div>`;
+}
+
+// ── API ────────────────────────────────────────────────────────────────────────
+async function loadAll(){
+  try{
+    const [pr,dr]=await Promise.all([fetch(`${API}/pantry`).then(r=>r.json()),fetch(`${API}/dishes`).then(r=>r.json())]);
+    pantry=pr.pantry||[];customs=dr.dishes||[];refreshMaster(customs);
+  }catch{pantry=[];customs=[];}
+  document.getElementById('totalCount').textContent=(RAW.length+customs.length)+'+';
+  updateBadge();renderSidebar();
+}
+async function apiPantryAdd(item){
+  try{const r=await fetch(`${API}/pantry`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({item})});const d=await r.json();pantry=d.pantry||pantry;}
+  catch{if(!hasPantry(item))pantry.push(item);}
+  renderSidebar();if(['breakfast','lunch','dinner'].includes(view))renderGrid();
+}
+async function apiPantryRm(item){
+  try{const r=await fetch(`${API}/pantry`,{method:'DELETE',headers:{'Content-Type':'application/json'},body:JSON.stringify({item})});const d=await r.json();pantry=d.pantry||pantry;}
+  catch{pantry=pantry.filter(p=>p.toLowerCase()!==item.toLowerCase());}
+  renderSidebar();if(['breakfast','lunch','dinner'].includes(view))renderGrid();
+}
+async function apiPantrySet(items){
+  try{const r=await fetch(`${API}/pantry`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({pantry:items})});const d=await r.json();pantry=d.pantry||items;}
+  catch{pantry=items;}
+  renderSidebar();if(['breakfast','lunch','dinner'].includes(view))renderGrid();
+}
+async function apiSaveDish(payload){
+  const isEdit=!!payload.id;
+  const r=await fetch(isEdit?`${API}/dishes/${payload.id}`:`${API}/dishes`,{method:isEdit?'PUT':'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+  const d=await r.json();customs=d.dishes||customs;refreshMaster(customs);updateBadge();
+  document.getElementById('totalCount').textContent=(RAW.length+customs.length)+'+';
+}
+async function apiDeleteDish(id){
+  const r=await fetch(`${API}/dishes/${id}`,{method:'DELETE'});
+  const d=await r.json();customs=d.dishes||customs;updateBadge();
+  document.getElementById('totalCount').textContent=(RAW.length+customs.length)+'+';
+}
+function updateBadge(){
+  const b=document.getElementById('customBadge');
+  b.style.display=customs.length?'inline':'none';b.textContent=customs.length;
+}
+
+// ── SIDEBAR PANTRY ─────────────────────────────────────────────────────────────
+function renderSidebar(){
+  document.getElementById('pCount').textContent=pantry.length+' items';
+  const el=document.getElementById('pantryItems');
+  el.innerHTML=!pantry.length
+    ?'<div class="p-empty">No items yet.</div>'
+    :pantry.map(it=>`<span class="p-item">${it}<button class="p-item-rm" onclick="rmItem('${it.replace(/'/g,"\\'")}',event)">✕</button></span>`).join('');
+}
+function rmItem(it,e){if(e)e.stopPropagation();apiPantryRm(it);showToast('Removed: '+it,'red');}
+function clearPantry(){if(!confirm('Clear entire kitchen pantry?'))return;apiPantrySet([]);showToast('Kitchen cleared','red');}
+
+const comboInput=document.getElementById('comboInput');
+const comboDd=document.getElementById('comboDd');
+const sideAddBtn=document.getElementById('sideAddBtn');
+comboInput.addEventListener('input',()=>{comboSel='';sideAddBtn.className='add-btn'+(comboInput.value.trim()?' visible':'');renderComboDd();});
+comboInput.addEventListener('focus',()=>{comboDd.classList.add('open');renderComboDd();});
+document.addEventListener('click',e=>{if(!e.target.closest('.combo-wrap'))comboDd.classList.remove('open');});
+function renderComboDd(){
+  const q=comboInput.value.trim().toLowerCase();
+  const ms=q?MASTER.filter(i=>i.toLowerCase().includes(q)).slice(0,15):MASTER.slice(0,18);
+  let h=ms.map(i=>{const al=hasPantry(i);return`<div class="combo-option${al?' already':''}" onclick="selCombo('${i.replace(/'/g,"\\'")}')"><span style="font-size:.7rem">${al?'✓':'＋'}</span>${i}${al?' ✓':''}</div>`;}).join('');
+  if(q&&!MASTER.find(m=>m.toLowerCase()===q))h+=`<div class="combo-add-new" onclick="selCombo('${comboInput.value.trim().replace(/'/g,"\\'")}')">＋ Add "${comboInput.value.trim()}" as new</div>`;
+  comboDd.innerHTML=h||'<div style="padding:.45rem .85rem;font-size:.76rem;color:var(--ink-light)">No matches</div>';
+}
+function selCombo(it){comboInput.value=it;comboSel=it;comboDd.classList.remove('open');sideAddBtn.className='add-btn visible';}
+function sidebarAdd(){
+  const it=comboSel||comboInput.value.trim();if(!it)return;
+  if(hasPantry(it)){showToast(it+' already added');return;}
+  apiPantryAdd(it);comboInput.value='';comboSel='';sideAddBtn.className='add-btn';showToast('Added: '+it,'green');
+}
+comboInput.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();sidebarAdd();}});
+
+// ── GRID ───────────────────────────────────────────────────────────────────────
+let _lastDishes=[];
+function renderGrid(){
+  const sets=getSets(),total=sets.length;
+  if(setIdx>=total)setIdx=Math.max(0,total-1);
+  const dishes=sets[setIdx]||[];
+  _lastDishes=dishes;
+  document.getElementById('setNum').textContent=setIdx+1;
+  document.getElementById('setTotal').textContent=total||1;
+  document.getElementById('prevBtn').disabled=setIdx===0;
+  document.getElementById('nextBtn').disabled=setIdx>=total-1;
+  document.getElementById('modeBadge').style.display=pantry.length?'inline-flex':'none';
+  const grid=document.getElementById('dishesGrid');
+  grid.innerHTML='';
+  if(!dishes.length){
+    grid.innerHTML='<div class="es"><span class="es-e">🍽️</span><p>No dishes match this filter.</p></div>';return;
+  }
+  dishes.forEach((dish,idx)=>{
+    const ms=pantry.length?matchScore(dish):null;
+    const card=document.createElement('div');
+    card.className='dish-card'+(ms&&ms.canMake?' can-make':'')+(dish.custom?' is-custom':'');
+    card.style.animationDelay=idx*0.04+'s';
+    const bgC=dish.type==='nonveg'?'#fef2f2':dish.type==='vegan'?'#eff8ff':'var(--saffron-light)';
+    const timeBadge=dish.time<=20?'⚡':dish.time<=40?'🕐':'⏳';
+    let matchHtml='';
+    let dotsHtml='';
+    if(ms&&dish.ing.length){
+      const pct=Math.round(ms.score*100);
+      matchHtml=ms.canMake?'<span class="mb full">✓ Ready</span>':pct>=55?`<span class="mb partial">${pct}%</span>`:'';
+      dotsHtml='<div class="ing-dots">';
+      dish.ing.forEach(i=>{
+        const hv=hasPantry(i.n);
+        dotsHtml+=`<span class="id ${i.m?(hv?'have':'missing'):(hv?'opt-h':'opt-m')}" title="${i.n}"></span>`;
+      });
+      dotsHtml+='</div>';
+    }
+    const topBadge=dish.custom?'<span class="deb custom">✨ Custom</span>':(dish.easy?'<span class="deb easy">Easy</span>':'');
+    const footer=dish.custom
+      ?`<div class="dca"><button class="view-btn" onclick="event.stopPropagation();openModal(_lastDishes[${idx}])">View</button><button class="edit-cbtn" onclick="event.stopPropagation();openForm('${dish.id}')">Edit</button></div>`
+      :`<button class="view-btn">Details →</button>`;
+    card.innerHTML=`
+      <div class="dew" style="background:${bgC}">
+        ${topBadge}<span style="font-size:2rem">${dish.e}</span>
+        <span class="dcb">${dish.o}</span>${matchHtml}
+      </div>
+      <div class="dish-body">
+        <div class="dish-name">${dish.n}</div>
+        <div class="dish-desc">${dish.d}</div>${dotsHtml}
+      </div>
+      <div class="dish-footer"><span class="dish-time">${timeBadge} <strong>${dish.time}m</strong></span>${footer}</div>`;
+    card.onclick=e=>{if(!e.target.classList.contains('edit-cbtn'))openModal(dish);};
+    grid.appendChild(card);
+  });
+}
+
+// ── VIEW SWITCHING ─────────────────────────────────────────────────────────────
+function switchView(v){
+  view=v;setIdx=0;
+  ['breakfast','lunch','dinner','pantry','custom'].forEach(x=>document.getElementById('tab-'+x).classList.toggle('active',x===v));
+  const isMeal=['breakfast','lunch','dinner'].includes(v);
+  document.getElementById('controlsBar').style.display=isMeal?'block':'none';
+  document.getElementById('mealPage').style.display=isMeal?'block':'none';
+  document.getElementById('pantryPanel').style.display=isMeal?'block':'none';
+  document.getElementById('pantryPage').style.display=v==='pantry'?'block':'none';
+  document.getElementById('customPage').style.display=v==='custom'?'block':'none';
+  document.getElementById('appBody').className='app-body'+(isMeal?'':' full-width');
+  if(isMeal)renderGrid();
+  if(v==='pantry')renderPantryPage();
+  if(v==='custom')renderCustomPage();
+}
+function setFilter(f){
+  filter=f;setIdx=0;
+  ['all','veg','nonveg','easy','canmake','custom'].forEach(x=>document.getElementById('f-'+x).classList.toggle('active',x===f));
+  renderGrid();
+}
+function nextSet(){const s=getSets();if(setIdx<s.length-1){setIdx++;renderGrid();}}
+function prevSet(){if(setIdx>0){setIdx--;renderGrid();}}
+function shuffleSet(){setIdx=Math.floor(Math.random()*Math.max(1,getSets().length));renderGrid();}
+
+// ── PANTRY FULL PAGE ───────────────────────────────────────────────────────────
+function renderPantryPage(){
+  document.getElementById('ppSI').textContent=pantry.length;
+  document.getElementById('ppSB').textContent=countMakeable('breakfast');
+  document.getElementById('ppSL').textContent=countMakeable('lunch');
+  document.getElementById('ppSD').textContent=countMakeable('dinner');
+  document.getElementById('ppMyC').textContent='('+pantry.length+')';
+  document.getElementById('ppMy').innerHTML=!pantry.length
+    ?'<div style="color:var(--ink-light);font-size:.78rem">No items yet.</div>'
+    :pantry.map(i=>`<span class="pp-chip in" onclick="ppToggle('${i.replace(/'/g,"\\'")}')"><span style="font-size:.7rem">✓</span>${i}</span>`).join('');
+  document.getElementById('ppAll').innerHTML=MASTER.map(i=>{
+    const h=hasPantry(i);
+    return`<span class="pp-chip ${h?'in':'out'}" onclick="ppToggle('${i.replace(/'/g,"\\'")}')"><span style="font-size:.7rem">${h?'✓':'＋'}</span>${i}</span>`;
+  }).join('');
+}
+function ppToggle(it){
+  if(hasPantry(it)){apiPantryRm(it);showToast('Removed: '+it,'red');}
+  else{apiPantryAdd(it);showToast('Added: '+it,'green');}
+  setTimeout(renderPantryPage,300);
+}
+const ppSearch=document.getElementById('ppSearch');
+const ppDd=document.getElementById('ppDd');
+const ppAddBtn=document.getElementById('ppAddBtn');
+ppSearch.addEventListener('input',()=>{ppSel='';ppAddBtn.disabled=!ppSearch.value.trim();renderPpDd();});
+ppSearch.addEventListener('focus',()=>{ppDd.classList.add('open');renderPpDd();});
+document.addEventListener('click',e=>{if(!e.target.closest('.pp-sw'))ppDd.classList.remove('open');});
+function renderPpDd(){
+  const q=ppSearch.value.trim().toLowerCase();
+  const ms=q?MASTER.filter(i=>i.toLowerCase().includes(q)).slice(0,15):MASTER.slice(0,18);
+  let h=ms.map(i=>{const al=hasPantry(i);return`<div class="pp-opt${al?' already':''}" onclick="selPp('${i.replace(/'/g,"\\'")}')"><span>${al?'✓':'＋'}</span>${i}${al?' (in kitchen)':''}</div>`;}).join('');
+  if(q&&!MASTER.find(m=>m.toLowerCase()===q))h+=`<div class="pp-an" onclick="selPp('${ppSearch.value.trim().replace(/'/g,"\\'")}')">＋ Add "${ppSearch.value.trim()}"</div>`;
+  ppDd.innerHTML=h||'<div style="padding:.5rem .9rem;font-size:.8rem;color:var(--ink-light)">No matches</div>';
+}
+function selPp(it){ppSearch.value=it;ppSel=it;ppDd.classList.remove('open');ppAddBtn.disabled=false;}
+function ppAdd(){
+  const it=ppSel||ppSearch.value.trim();if(!it)return;
+  if(hasPantry(it)){showToast(it+' already added');return;}
+  apiPantryAdd(it);ppSearch.value='';ppSel='';ppAddBtn.disabled=true;
+  showToast('Added: '+it,'green');setTimeout(renderPantryPage,300);
+}
+ppSearch.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();ppAdd();}});
+async function addCat(cat){
+  const items=CATS[cat]||[];
+  const newItems=items.filter(i=>!hasPantry(i));
+  if(!newItems.length){showToast('All '+cat+' items already added');return;}
+  try{const r=await fetch(`${API}/pantry`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({items:newItems})});const d=await r.json();pantry=d.pantry||pantry;}
+  catch{newItems.forEach(i=>{if(!hasPantry(i))pantry.push(i);});}
+  renderSidebar();renderPantryPage();showToast('Added '+newItems.length+' '+cat+' items','green');
+}
+
+// ── CUSTOM RECIPES PAGE ────────────────────────────────────────────────────────
+function renderCustomPage(){
+  const el=document.getElementById('cdGrid');
+  if(!customs.length){
+    el.innerHTML=`<div class="no-custom" style="grid-column:1/-1">
+      <span class="no-custom-em">✨</span>
+      <p>No custom recipes yet. Add your own dishes — they'll appear in daily suggestions!</p>
+      <button class="start-btn" onclick="openForm()">＋ Create Your First Recipe</button>
+    </div>`;return;
+  }
+  el.innerHTML=customs.map(d=>{
+    const typeLabel=d.type==='veg'?'🟢 Veg':d.type==='vegan'?'🔵 Vegan':'🔴 Non-Veg';
+    const catLabel=d.category==='breakfast'?'🌅 Breakfast':d.category==='lunch'?'☀️ Lunch':'🌙 Dinner';
+    const timeLabel=d.time<=20?'⚡ Quick':d.time<=45?'🕐 Medium':'⏳ Long';
+    const ingCount=(d.ingredients||[]).length;
+    return`<div class="cdc">
+      <div class="cdc-head">
+        <span class="cdc-em">${d.emoji||'🍽️'}</span>
+        <div class="cdc-info"><div class="cdc-name">${d.name}</div><div class="cdc-meta">${d.origin||'My Kitchen'} &middot; ${timeLabel} &middot; ${ingCount} ingredients</div></div>
+      </div>
+      <div class="cdc-body">
+        <div class="cdc-desc">${d.description}</div>
+        <div class="cdc-tags">
+          <span class="cdc-tag ${d.type}">${typeLabel}</span>
+          <span class="cdc-tag meal">${catLabel}</span>
+          ${d.easy?'<span class="cdc-tag easy">Easy</span>':''}
+        </div>
+        <div class="cdc-actions">
+          <button class="cdc-btn view" onclick="openModalById('${d.id}')">👁 View</button>
+          <button class="cdc-btn edit" onclick="openForm('${d.id}')">✏️ Edit</button>
+          <button class="cdc-btn del" onclick="delDish('${d.id}')">🗑 Delete</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── DISH FORM ──────────────────────────────────────────────────────────────────
+const EMOJIS=['🍛','🍲','🫓','🍚','🥘','🍝','🍜','🍱','🥗','🥙','🌮','🌯','🥞','🍳','🍖','🍗','🦐','🐟','🧀','🥚','🥦','🥬','🍆','🥔','🥒','🎃','🍄','🟡','🍩','🍢','🍞','🥐','🥣','🍵','🍅','🫘','🫕','🍙','🍙','🍮','🟤'];
+
+function initEmojiPicker(sel='🍛'){
+  document.getElementById('emojiRow').innerHTML=EMOJIS.map(e=>`<span class="ep${sel===e?' sel':''}" onclick="selEmoji('${e}')">${e}</span>`).join('');
+  document.getElementById('customEmoji').value=EMOJIS.includes(sel)?'':sel;
+}
+function selEmoji(e){document.querySelectorAll('.ep').forEach(el=>el.classList.toggle('sel',el.textContent===e));document.getElementById('customEmoji').value='';}
+function getEmoji(){const c=document.getElementById('customEmoji').value.trim();if(c)return c;const s=document.querySelector('.ep.sel');return s?s.textContent:'🍽️';}
+document.getElementById('customEmoji').addEventListener('input',()=>document.querySelectorAll('.ep').forEach(e=>e.classList.remove('sel')));
+
+function renderIbList(){
+  const el=document.getElementById('ibList');
+  if(!formIngs.length){el.innerHTML='<div style="padding:.55rem .7rem;font-size:.75rem;color:var(--ink-light)">No ingredients added yet.</div>';return;}
+  el.innerHTML=formIngs.map((ing,i)=>`
+    <div class="ib-row">
+      <span class="ib-name">${ing.name}</span>
+      <span class="ib-badge ${ing.mandatory?'req':'opt'}">${ing.mandatory?'Required':'Optional'}</span>
+      <button class="ib-del" onclick="rmIng(${i})">✕</button>
+    </div>`).join('');
+}
+function addIngRow(){
+  const input=document.getElementById('ibInput'),type=document.getElementById('ibType').value,name=input.value.trim();
+  if(!name)return;
+  if(formIngs.find(i=>i.name.toLowerCase()===name.toLowerCase())){showToast('Already added');return;}
+  formIngs.push({name,mandatory:type==='required'});input.value='';
+  document.getElementById('ibAc').classList.remove('open');
+  if(!MASTER.find(m=>m.toLowerCase()===name.toLowerCase())){MASTER.push(name);MASTER.sort((a,b)=>a.toLowerCase().localeCompare(b.toLowerCase()));}
+  renderIbList();
+}
+function rmIng(idx){formIngs.splice(idx,1);renderIbList();}
+
+const ibInput=document.getElementById('ibInput');
+const ibAc=document.getElementById('ibAc');
+ibInput.addEventListener('input',()=>{
+  const q=ibInput.value.trim().toLowerCase();
+  if(!q){ibAc.classList.remove('open');return;}
+  const ms=MASTER.filter(i=>i.toLowerCase().includes(q)).slice(0,12);
+  if(!ms.length){ibAc.classList.remove('open');return;}
+  ibAc.innerHTML=ms.map(i=>`<div class="ib-ac-opt" onclick="selIbAc('${i.replace(/'/g,"\\'")}')">＋ ${i}</div>`).join('');
+  ibAc.classList.add('open');
+});
+ibInput.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();addIngRow();}});
+document.addEventListener('click',e=>{if(!e.target.closest('.ib-add-wrap'))ibAc.classList.remove('open');});
+function selIbAc(n){ibInput.value=n;ibAc.classList.remove('open');}
+
+function openForm(id=null){
+  editId=id;formIngs=[];
+  const dish=id?customs.find(d=>d.id===id):null;
+  document.getElementById('formTitle').textContent=dish?'✏️ Edit Recipe':'✨ Add New Recipe';
+  document.getElementById('formSub').textContent=dish?'Update your custom dish':'Create your custom dish — it will appear in daily suggestions';
+  document.getElementById('deleteFormBtn').style.display=dish?'flex':'none';
+  document.getElementById('editId').value=id||'';
+  initEmojiPicker(dish?dish.emoji:'🍛');
+  document.getElementById('dName').value=dish?dish.name:'';
+  document.getElementById('dOrigin').value=dish?dish.origin:'';
+  document.getElementById('dCat').value=dish?dish.category:'lunch';
+  document.getElementById('dType').value=dish?dish.type:'veg';
+  document.getElementById('dTime').value=dish?dish.time:30;
+  document.getElementById('dEasy').value=dish?(dish.easy?'1':'0'):'0';
+  document.getElementById('dDesc').value=dish?dish.description:'';
+  document.getElementById('dRecipe').value=dish?dish.recipe:'';
+  document.getElementById('dTips').value=dish?dish.tips:'';
+  formIngs=dish?(dish.ingredients||[]).map(i=>({name:i.name||i.n||'',mandatory:i.mandatory!==undefined?i.mandatory:(i.m!==undefined?i.m:true)})):[];
+  renderIbList();
+  document.getElementById('formOverlay').classList.add('open');
+  document.body.style.overflow='hidden';
+}
+function closeForm(){document.getElementById('formOverlay').classList.remove('open');document.body.style.overflow='';}
+function closeFormOuter(e){if(e.target===document.getElementById('formOverlay'))closeForm();}
+async function saveDish(){
+  const name=document.getElementById('dName').value.trim();
+  const desc=document.getElementById('dDesc').value.trim();
+  if(!name){showToast('Dish name is required','red');return;}
+  if(!desc){showToast('Description is required','red');return;}
+  const payload={name,emoji:getEmoji(),origin:document.getElementById('dOrigin').value.trim()||'My Kitchen',category:document.getElementById('dCat').value,type:document.getElementById('dType').value,time:parseInt(document.getElementById('dTime').value)||30,easy:document.getElementById('dEasy').value==='1',description:desc,ingredients:formIngs,recipe:document.getElementById('dRecipe').value.trim(),tips:document.getElementById('dTips').value.trim()};
+  if(editId)payload.id=editId;
+  try{
+    await apiSaveDish(payload);
+    showToast(editId?'Recipe updated! ✨':'Recipe saved! Now in daily suggestions 🎉','green');
+    closeForm();renderCustomPage();updateBadge();
+    if(['breakfast','lunch','dinner'].includes(view))renderGrid();
+  }catch(err){showToast('Error: '+err.message,'red');}
+}
+async function deleteFromForm(){
+  if(!editId)return;
+  if(!confirm('Delete this custom recipe permanently?'))return;
+  await apiDeleteDish(editId);showToast('Recipe deleted','red');
+  closeForm();renderCustomPage();if(['breakfast','lunch','dinner'].includes(view))renderGrid();
+}
+async function delDish(id){
+  if(!confirm('Delete this recipe?'))return;
+  await apiDeleteDish(id);showToast('Recipe deleted','red');
+  renderCustomPage();if(['breakfast','lunch','dinner'].includes(view))renderGrid();
+}
+
+// ── MODAL ──────────────────────────────────────────────────────────────────────
+function openModalById(id){const raw=customs.find(d=>d.id===id);if(raw)openModal(parseCustom(raw));}
+function openModal(dish){
+  curDish=dish;
+  const ms=pantry.length?matchScore(dish):null;
+  const isC=dish.custom;
+  document.getElementById('mEmoji').textContent=dish.e;
+  document.getElementById('mTitle').textContent=dish.n;
+  document.getElementById('mOrigin').textContent=dish.o+' · '+dish.type.charAt(0).toUpperCase()+dish.type.slice(1)+' · '+dish.cat.charAt(0).toUpperCase()+dish.cat.slice(1)+(isC?' · ✨ Custom':'');
+  document.getElementById('mDesc').textContent=dish.d;
+  document.getElementById('mHero').className='modal-hero'+(isC?' ch':'');
+  document.getElementById('mMeta').innerHTML=`
+    <div class="mi"><span class="mi-l">Cook Time</span><span class="mi-v">${dish.time} min</span></div>
+    <div class="mi"><span class="mi-l">Difficulty</span><span class="mi-v">${dish.easy?'Easy':'Moderate'}</span></div>
+    <div class="mi"><span class="mi-l">Pantry Match</span><span class="mi-v">${ms?Math.round(ms.score*100)+'%':'—'}</span></div>`;
+  const ingEl=document.getElementById('mIng');
+  if(!dish.ing.length){ingEl.innerHTML='<div style="color:var(--ink-light);font-size:.78rem;grid-column:1/-1;padding:.3rem">No ingredients listed.</div>';}
+  else{ingEl.innerHTML=dish.ing.map(i=>{
+    const hv=pantry.length?hasPantry(i.n):null;
+    let rc='',dc='opt-m',bc='opt',bt='Optional';
+    if(i.m){rc=hv===true?'have-it':hv===false?'miss-it':'';dc=hv===true?'have':hv===false?'miss':'opt-m';bc=hv===true?'have':hv===false?'miss':'opt';bt=hv===true?'✓ In kitchen':hv===false?'Missing':'Required';}
+    else{rc=hv===true?'opt-h':'opt-m';dc=hv===true?'opt-h':'opt-m';}
+    return`<div class="ir ${rc}"><span class="id2 ${dc}"></span><span class="i-label">${i.n}</span><span class="i-badge ${bc}">${bt}</span></div>`;
+  }).join('');}
+  const recSec=document.getElementById('recSec'),tipSec=document.getElementById('tipSec'),aiSec=document.getElementById('aiSec');
+  if(isC&&dish.recipe){recSec.style.display='block';document.getElementById('mRecipe').textContent=dish.recipe;}else{recSec.style.display='none';}
+  if(isC&&dish.tips){tipSec.style.display='block';document.getElementById('mTips').textContent=dish.tips;}else{tipSec.style.display='none';}
+  const showAi=!(isC&&(dish.recipe||dish.tips));
+  aiSec.style.display=showAi?'block':'none';
+  if(showAi){document.getElementById('aiContent').innerHTML='<div class="ai-loading"><div class="ai-spinner"></div>Getting AI tips...</div>';fetchAI(dish);}
+  const misBtn=ms&&ms.missing.length?`<button class="ab green" onclick="addMissing()">＋ Add ${ms.missing.length} Missing</button>`:'';
+  const editBtn=isC?`<button class="ab purple" onclick="closeModal();openForm('${dish.id}')">✏️ Edit</button>`:'';
+  document.getElementById('mActions').innerHTML=`
+    <button class="ab primary" onclick="goog()">🔍 Google</button>
+    <button class="ab secondary" onclick="yt()">▶ YouTube</button>
+    ${misBtn}${editBtn}
+    <button class="ab ghost" onclick="closeModal()">Close</button>`;
+  document.getElementById('modalOverlay').classList.add('open');
+  document.body.style.overflow='hidden';
+}
+function addMissing(){if(!curDish)return;const ms=matchScore(curDish);ms.missing.forEach(i=>apiPantryAdd(i.n));showToast('Added '+ms.missing.length+' missing items','green');setTimeout(()=>openModal(curDish),400);}
+function closeModal(){document.getElementById('modalOverlay').classList.remove('open');document.body.style.overflow='';}
+function closeModalOuter(e){if(e.target===document.getElementById('modalOverlay'))closeModal();}
+function goog(){if(curDish)window.open('https://www.google.com/search?q='+encodeURIComponent(curDish.n+' recipe'),'_blank');}
+function yt(){if(curDish)window.open('https://www.youtube.com/results?search_query='+encodeURIComponent(curDish.n+' recipe how to make'),'_blank');}
+
+// ── AI TIPS ────────────────────────────────────────────────────────────────────
+async function fetchAI(dish){
+  const aiDiv=document.getElementById('aiContent');
+  const ms=pantry.length?matchScore(dish):null;
+  const missList=ms&&ms.missing.length?'Missing: '+ms.missing.map(i=>i.n).join(', ')+'.':'';
+  try{
+    const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:400,messages:[{role:'user',content:`For "${dish.n}" from ${dish.o}, give 3 tips as HTML only:\n<h4>🍳 Key Technique</h4><p>one sentence</p>\n<h4>⭐ Chef Secret</h4><p>one sentence</p>\n<h4>🍶 Best Pairing</h4><p>one sentence${missList?`</p><h4>🛒 Shopping Tip</h4><p>${missList} Quick substitutes?`:''}</p>`}]})});
+    const d=await r.json();
+    aiDiv.innerHTML=`<div class="ai-result">${d.content?.[0]?.text||'<p>Enjoy this dish!</p>'}</div>`;
+  }catch{aiDiv.innerHTML=`<div class="ai-result"><h4>🍳 Quick Tip</h4><p>Fresh ingredients and patience make ${dish.n} exceptional.</p></div>`;}
+}
+
+// ── TOAST ──────────────────────────────────────────────────────────────────────
+let _tt;
+function showToast(msg,type=''){
+  const t=document.getElementById('toast');t.textContent=msg;
+  t.className='toast show'+(type?' '+type:'');clearTimeout(_tt);
+  _tt=setTimeout(()=>t.className='toast',2600);
+}
+
+// ── INIT ───────────────────────────────────────────────────────────────────────
+initDate();
+loadAll().then(()=>switchView('breakfast'));
+</script>
+</body>
+</html>
