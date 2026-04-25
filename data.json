@@ -23,9 +23,12 @@
     "Potatoes",
     "Spinach",
     "Lemon juice",
-    "Coriander leaves",
-    "Curry leaves",
-    "Malabar Spinach"
+    "Malabar Spinach",
+    "Bhindi",
+    "Basmati rice",
+    "All-purpose flour",
+    "Chicken",
+    "Red Chilli"
   ],
   "customDishes": [
     {
@@ -57,7 +60,45 @@
       "custom": true,
       "createdAt": "2026-04-25T15:31:24.801Z",
       "updatedAt": "2026-04-25T15:31:24.801Z"
+    },
+    {
+      "id": "dish_1777132763990_tyido",
+      "name": "Tomato Chutney",
+      "emoji": "🤪",
+      "origin": "Bihar",
+      "category": "lunch",
+      "type": "veg",
+      "time": 10,
+      "easy": false,
+      "description": "Boil And Grind",
+      "ingredients": [
+        {
+          "name": "Tomato",
+          "mandatory": true
+        },
+        {
+          "name": "Garlic",
+          "mandatory": true
+        },
+        {
+          "name": "Ginger",
+          "mandatory": true
+        },
+        {
+          "name": "Red Chilli",
+          "mandatory": true
+        },
+        {
+          "name": "Salt",
+          "mandatory": true
+        }
+      ],
+      "recipe": "Boil and Grind",
+      "tips": "",
+      "custom": true,
+      "createdAt": "2026-04-25T15:59:23.991Z",
+      "updatedAt": "2026-04-25T15:59:23.991Z"
     }
   ],
-  "updatedAt": "2026-04-25T15:31:40.152Z"
+  "updatedAt": "2026-04-25T16:00:17.096Z"
 }
